@@ -1,15 +1,16 @@
 import 'dotenv/config';
-import { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes } from 'discord.js';
+// Wprowadzono Partials i ChannelType
+import { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, ChannelType, Partials } from 'discord.js'; 
 
 // --- KLIENT I INTENTY ---
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
-    partials: ['CHANNEL']
+    // POPRAWKA: Użycie Partials.Channel
+    partials: [Partials.Channel] 
 });
 
-// ------------------- KOMENDY (Poprawiono setRequired na false) -------------------
-
+// ------------------- KOMENDY -------------------
 const commands = [
     new SlashCommandBuilder().setName('co').setDescription('Odpowiada gówno i pokazuje latency').setDMPermission(true),
     new SlashCommandBuilder().setName('morda').setDescription('Wyzywa wskazaną osobę').addUserOption(o => o.setName('kto').setDescription('Kogo zwyzywać').setRequired(false)).setDMPermission(true), 
@@ -31,29 +32,27 @@ client.on('interactionCreate', async i => {
     // 1. Walidacja: Upewnij się, że to jest komenda slash.
     if (!i.isChatInputCommand()) return;
 
-    // 2. POPRAWKA ANTY-BŁĘDOWA I LOGOWANIE DM:
-    if (i.channel && i.channel.type === 1) { 
+    // 2. POPRAWKA DM: Użycie ChannelType.DM
+    if (i.channel && i.channel.type === ChannelType.DM) { 
         console.log(`[DM OK] Odebrano komendę slash '/${i.commandName}' w Wiadomości Prywatnej od użytkownika ${i.user.tag}.`);
     }
 
     const name = i.commandName;
     const user = i.options?.getUser('kto');
 
-    // Używamy podanego użytkownika, a jeśli jest null (DM), używamy użytkownika wywołującego
     const targetUser = user || i.user; 
 
     const randomFrom = arr => arr[Math.floor(Math.random() * arr.length)];
     const latency = Date.now() - i.createdTimestamp;
 
+    // --- LOGIKA KOMEND ---
+    
     if (name === 'co') {
         return i.reply(`Gówno \nLatency: ${latency}ms`);
     }
-        
-    // Walidacja użycia na serwerze (można ją pominąć, targetUser i tak jest zdefiniowany)
-    if (!i.inGuild() && !user && name !== 'co' && name !== 'rozkurw' && name !== 'impreza' && name !== 'los') {
-        // Logika pominięta - targetUser już to obsługuje.
-    }
-
+    
+    // Walidacja użycia na serwerze (pominięta, ponieważ targetUser i tak jest zdefiniowany)
+    // if (!i.inGuild() && !user && name !== 'co' && name !== 'rozkurw' && name !== 'impreza' && name !== 'los') { ... }
 
     if (name === 'morda') {
         const teksty = [
