@@ -14,10 +14,10 @@ const commands = [
   new SlashCommandBuilder().setName('zabierz').setDescription('Zabiera coś komuś').addUserOption(o => o.setName('kto').setDescription('Komu zabrać').setRequired(true)),
   new SlashCommandBuilder().setName('zajeb').setDescription('Daje mocne jebnięcie komuś').addUserOption(o => o.setName('kto').setDescription('Komu').setRequired(true)),
   new SlashCommandBuilder().setName('wkurw').setDescription('Wkurwia kogoś').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(true)),
-  new SlashCommandBuilder().setName('jebanie').setDescription('Opisuje jebnięcie'),
-  new SlashCommandBuilder().setName('los').setDescription('Losuje losowo cokolwiek wkurwiającego'),
-  new SlashCommandBuilder().setName('lisc').setDescription('Wysyła losowego liścia'),
-  new SlashCommandBuilder().setName('love').setDescription('Losowy komplement miłosny'),
+  new SlashCommandBuilder().setName('jebanie').setDescription('Opisuje jebnięcie').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(true)),
+  new SlashCommandBuilder().setName('los').setDescription('Losuje losowo cokolwiek wkurwiającego').addUserOption(o => o.setName('kto').setDescription('Dla kogo losować').setRequired(false)),
+  new SlashCommandBuilder().setName('lisc').setDescription('Wysyła losowego liścia').addUserOption(o => o.setName('kto').setDescription('Komu dać liścia').setRequired(true)),
+  new SlashCommandBuilder().setName('love').setDescription('Losowy komplement miłosny').addUserOption(o => o.setName('kto').setDescription('Komu dać komplement').setRequired(true)),
   new SlashCommandBuilder().setName('rozkurw').setDescription('Rozkurwia sytuację'),
   new SlashCommandBuilder().setName('impreza').setDescription('Opisuje imprezę'),
   new SlashCommandBuilder().setName('torcik').setDescription('Daje torcik komuś').addUserOption(o => o.setName('kto').setDescription('Komu dać torcik').setRequired(true)),
@@ -34,7 +34,7 @@ client.on('interactionCreate', async i => {
   const latency = Date.now() - i.createdTimestamp;
 
   if (name === 'co') {
-    return i.reply(`Gówno 😡\nLatency: ${latency}ms`);
+    return i.reply(`Gówno \nLatency: ${latency}ms`);
   }
 
   if (name === 'morda') {
@@ -68,23 +68,23 @@ client.on('interactionCreate', async i => {
       `Zabrałem godność ${user}`,
       `Zabrałem honor ${user}`,
       `Zabrałem ostatni pierdolony cukierek od ${user}`,
-      `Zabrałem szacunek ${user}`,
-      `Zabrałem marzenia ${user}`,
-      `Zabrałem nadzieję ${user}`,
-      `Zabrałem radość ${user}`,
-      `Zabrałem władzę ${user}`,
-      `Zabrałem energię życiową ${user}`,
-      `Zabrałem uśmiech ${user}`,
-      `Zabrałem humor ${user}`,
-      `Zabrałem złudzenia ${user}`,
-      `Zabrałem talent ${user}`,
-      `Zabrałem kreatywność ${user}`,
-      `Zabrałem portfel ${user}`,
-      `Zabrałem telefon ${user}`,
-      `Zabrałem zegarek ${user}`,
-      `Zabrałem klucze ${user}`,
-      `Zabrałem jedzenie ${user}`,
-      `Zabrałem tlen ${user}`
+      `Zabrałem szacunek od ${user}`,
+      `Zabrałem marzenia od ${user}`,
+      `Zabrałem nadzieję od ${user}`,
+      `Zabrałem radość od ${user}`,
+      `Zabrałem władzę od ${user}`,
+      `Zabrałem energię życiową od ${user}`,
+      `Zabrałem uśmiech od ${user}`,
+      `Zabrałem humor od ${user}`,
+      `Zabrałem złudzenia od ${user}`,
+      `Zabrałem talent od ${user}`,
+      `Zabrałem kreatywność od ${user}`,
+      `Zabrałem portfel od ${user}`,
+      `Zabrałem telefon od ${user}`,
+      `Zabrałem zegarek od ${user}`,
+      `Zabrałem klucze od ${user}`,
+      `Zabrałem jedzenie od ${user}`,
+      `Zabrałem tlen od ${user}`
     ];
     return i.reply(randomFrom(teksty));
   }
