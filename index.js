@@ -9,18 +9,18 @@ const client = new Client({
 // ------------------- KOMENDY -------------------
 
 const commands = [
-  new SlashCommandBuilder().setName('co').setDescription('Odpowiada gówno i pokazuje latency'),
-  new SlashCommandBuilder().setName('morda').setDescription('Wyzywa wskazaną osobę').addUserOption(o => o.setName('kto').setDescription('Kogo zwyzywać').setRequired(true)),
-  new SlashCommandBuilder().setName('zabierz').setDescription('Zabiera coś komuś').addUserOption(o => o.setName('kto').setDescription('Komu zabrać').setRequired(true)),
-  new SlashCommandBuilder().setName('zajeb').setDescription('Daje mocne jebnięcie komuś').addUserOption(o => o.setName('kto').setDescription('Komu').setRequired(true)),
-  new SlashCommandBuilder().setName('wkurw').setDescription('Wkurwia kogoś').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(true)),
-  new SlashCommandBuilder().setName('jebanie').setDescription('Opisuje jebnięcie').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(true)),
-  new SlashCommandBuilder().setName('los').setDescription('Losuje losowo cokolwiek wkurwiającego').addUserOption(o => o.setName('kto').setDescription('Dla kogo losować').setRequired(false)),
-  new SlashCommandBuilder().setName('lisc').setDescription('Wysyła losowego liścia').addUserOption(o => o.setName('kto').setDescription('Komu dać liścia').setRequired(true)),
-  new SlashCommandBuilder().setName('love').setDescription('Losowy komplement miłosny').addUserOption(o => o.setName('kto').setDescription('Komu dać komplement').setRequired(true)),
-  new SlashCommandBuilder().setName('rozkurw').setDescription('Rozkurwia sytuację'),
-  new SlashCommandBuilder().setName('impreza').setDescription('Opisuje imprezę'),
-  new SlashCommandBuilder().setName('torcik').setDescription('Daje torcik komuś').addUserOption(o => o.setName('kto').setDescription('Komu dać torcik').setRequired(true)),
+  new SlashCommandBuilder().setName('co').setDescription('Odpowiada gówno i pokazuje latency').setDMPermission(true),
+  new SlashCommandBuilder().setName('morda').setDescription('Wyzywa wskazaną osobę').addUserOption(o => o.setName('kto').setDescription('Kogo zwyzywać').setRequired(true)).setDMPermission(true),
+  new SlashCommandBuilder().setName('zabierz').setDescription('Zabiera coś komuś').addUserOption(o => o.setName('kto').setDescription('Komu zabrać').setRequired(true)).setDMPermission(true),
+  new SlashCommandBuilder().setName('zajeb').setDescription('Daje mocne jebnięcie komuś').addUserOption(o => o.setName('kto').setDescription('Komu').setRequired(true)).setDMPermission(true),
+  new SlashCommandBuilder().setName('wkurw').setDescription('Wkurwia kogoś').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(true)).setDMPermission(true),
+  new SlashCommandBuilder().setName('jebanie').setDescription('Opisuje jebnięcie').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(true)).setDMPermission(true),
+  new SlashCommandBuilder().setName('los').setDescription('Losuje losowo cokolwiek wkurwiającego').addUserOption(o => o.setName('kto').setDescription('Dla kogo losować').setRequired(false)).setDMPermission(true),
+  new SlashCommandBuilder().setName('lisc').setDescription('Wysyła losowego liścia').addUserOption(o => o.setName('kto').setDescription('Komu dać liścia').setRequired(true)).setDMPermission(true),
+  new SlashCommandBuilder().setName('love').setDescription('Losowy komplement miłosny').addUserOption(o => o.setName('kto').setDescription('Komu dać komplement').setRequired(true)).setDMPermission(true),
+  new SlashCommandBuilder().setName('rozkurw').setDescription('Rozkurwia sytuację').setDMPermission(true),
+  new SlashCommandBuilder().setName('impreza').setDescription('Opisuje imprezę').setDMPermission(true),
+  new SlashCommandBuilder().setName('torcik').setDescription('Daje torcik komuś').addUserOption(o => o.setName('kto').setDescription('Komu dać torcik').setRequired(true)).setDMPermission(true),
 ].map(c => c.toJSON());
 
 // ------------------- LOGIKA -------------------
