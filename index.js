@@ -13,7 +13,7 @@ const client = new Client({
 client.once('clientReady', async (c) => {
     console.log(`Zalogowany jako ${c.user.tag}!`);
 
-    const channelId = 'ID-KANAŁU-TU';
+    const channelId = '1445670513153413203'; // Zamień na swój ID kanału testowego
     const channel = client.channels.cache.get(channelId);
 
     if (channel) {
