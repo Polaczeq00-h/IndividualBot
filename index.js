@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import fs from 'fs';
+import axios from 'axios';
 import { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, ChannelType, Partials } from 'discord.js';
 
 // --- KLIENT I INTENTY ---
@@ -15,18 +16,45 @@ client.once('clientReady', async (c) => {
     const channel = client.channels.cache.get('1445670513153413203');
     if (!channel) return console.log('Nie znalazłem kanału, pajacu.');
 
-    let prevCommands = [];
-    try { 
-        prevCommands = JSON.parse(fs.readFileSync('./prevCommands.json')); 
-    } catch {}
+    // Pobieramy ostatni commit z GitHub
+    try {
+        const owner = process.env.GITHUB_OWNER || 'Polaczeq00-h';
+        const repo = process.env.GITHUB_REPO || 'IndividualBot';
+        const branch = process.env.GITHUB_BRANCH || 'main';
 
-    const currentCommands = commands.map(c => c.name);
+        const response = await axios.get(
+            `https://api.github.com/repos/${owner}/${repo}/commits/${branch}`,
+            {
+                headers: process.env.GITHUB_TOKEN ? { 'Authorization': `token ${process.env.GITHUB_TOKEN}` } : {}
+            }
+        );
 
-    const newCommands = currentCommands.filter(c => !prevCommands.includes(c));
-    if (newCommands.length > 0) {
-        const changes = newCommands.map(c => `/${c} - ${commands.find(cmd => cmd.name === c).description}`).join('\n');
-        channel.send(`Update działa, kurwa.@everyone\nOto zmiany:\n${changes}`);
-        fs.writeFileSync('./prevCommands.json', JSON.stringify(currentCommands));
+        const commit = response.data;
+        const commitTitle = commit.commit.message.split('\n')[0];
+        const commitLink = commit.html_url;
+        const commitAuthor = commit.commit.author.name;
+        const commitDate = commit.commit.author.date;
+
+        // Sprawdzamy czy jest już zapisany ostatni commit ID
+        let lastCommitId = '';
+        try {
+            const data = JSON.parse(fs.readFileSync('./lastCommit.json', 'utf-8'));
+            lastCommitId = data.id;
+        } catch {}
+
+        // Jeśli to nowy commit, wysyłamy wiadomość
+        if (lastCommitId !== commit.sha) {
+            const message = `Update działa, kurwa. @everyone\nOstatni commit:\n**${commitTitle}**\n${commitLink}\n\n*Autor: ${commitAuthor}*\n*Data: ${new Date(commitDate).toLocaleString()}*`;
+            await channel.send(message);
+
+            // Zapisujemy nowy commit ID
+            fs.writeFileSync('./lastCommit.json', JSON.stringify({ id: commit.sha }));
+            console.log(`✅ Wysłano commit: ${commitTitle}`);
+        } else {
+            console.log('Brak nowych commitów.');
+        }
+    } catch (err) {
+        console.error('❌ Błąd pobierania commita z GitHub:', err.message);
     }
 });
 
