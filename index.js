@@ -1,27 +1,36 @@
 import 'dotenv/config';
-// Wprowadzono Partials i ChannelType
-import { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, ChannelType, Partials } from 'discord.js'; 
+import fs from 'fs';
+import { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, ChannelType, Partials } from 'discord.js';
 
 // --- KLIENT I INTENTY ---
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
-    // POPRAWKA: Użycie Partials.Channel
     partials: [Partials.Channel] 
 });
 
 client.once('clientReady', async (c) => {
     console.log(`Zalogowany jako ${c.user.tag}!`);
 
-    const channelId = '1445670513153413203'; // Zamień na swój ID kanału testowego
-    const channel = client.channels.cache.get(channelId);
+    const channel = client.channels.cache.get('1445670513153413203');
+    if (!channel) return console.log('Nie znalazłem kanału, pajacu.');
 
-    if (channel) {
-        channel.send('Update działa, kurwa.@everyone');
-    } else {
-        console.log('Nie znalazłem kanału, pajacu.');
+    let prevCommands = [];
+    try { 
+        prevCommands = JSON.parse(fs.readFileSync('./prevCommands.json')); 
+    } catch {}
+
+    const currentCommands = commands.map(c => c.name);
+
+    const newCommands = currentCommands.filter(c => !prevCommands.includes(c));
+    if (newCommands.length > 0) {
+        const changes = newCommands.map(c => `/${c} - ${commands.find(cmd => cmd.name === c).description}`).join('\n');
+        channel.send(`Update działa, kurwa.@everyone\nOto zmiany:\n${changes}`);
+        fs.writeFileSync('./prevCommands.json', JSON.stringify(currentCommands));
     }
 });
+
+
 
 
 // ------------------- KOMENDY -------------------
@@ -38,7 +47,8 @@ const commands = [
     new SlashCommandBuilder().setName('impreza').setDescription('Opisuje imprezę').setDMPermission(true),
     new SlashCommandBuilder().setName('torcik').setDescription('Daje torcik komuś').addUserOption(o => o.setName('kto').setDescription('Komu dać torcik').setRequired(false)).setDMPermission(true),
     new SlashCommandBuilder().setName('wyruchaj').setDescription('Losowo wyrycha kogoś').addUserOption(o => o.setName('kto').setDescription('Kogo wyrychać').setRequired(false)).setDMPermission(true),
-    new SlashCommandBuilder().setName('porno').setDescription('Wysyła losowe PORNO').setDMPermission(true)
+    new SlashCommandBuilder().setName('porno').setDescription('Wysyła losowe PORNO').setDMPermission(true),
+    new SlashCommandBuilder().setName('komendy').setDescription('Wyświetla listę komend').setDMPermission(true)
 ].map(c => c.toJSON());
 
 // ------------------- LOGIKA INTERAKCJI -------------------
@@ -53,9 +63,10 @@ client.on('interactionCreate', async i => {
     }
 
     const name = i.commandName;
+    // Zmieniamy user na i.user.username
     const user = i.options?.getUser('kto');
 
-    const targetUser = user || i.user; 
+    const targetUser = user || i.user;
 
     const randomFrom = arr => arr[Math.floor(Math.random() * arr.length)];
     const latency = Date.now() - i.createdTimestamp;
@@ -68,52 +79,57 @@ client.on('interactionCreate', async i => {
     
     // Walidacja użycia na serwerze (pominięta, ponieważ targetUser i tak jest zdefiniowany)
     // if (!i.inGuild() && !user && name !== 'co' && name !== 'rozkurw' && name !== 'impreza' && name !== 'los') { ... }
+    if (name === 'komendy') {
+    // Tworzymy listę komend dynamicznie
+    const lista = commands.map(c => `/${c.name} - ${c.description}`);
+    return i.reply(['Lista komend bota:', ...lista].join('\n'));
+}
     if (name === 'porno') {
         const teksty = [
-            `${user}, Oto twoje losowe PORNO: https://www.youtube.com/watch?v=dQw4w9WgXcQ`,
-            `${user}Ty jakiś zjebany jesteś?`,
-            `${user}Szukaj sam, nie jestem twoją kurwą!`,
-            `${user}Nie dostaniesz PORNO ode mnie!`,
-            `${user}Idź do diabła z tym PORNO!`,
-            `${user}Nie mam zamiaru ci dawać PORNO!`,
-            `${user}Szukaj gdzie indziej, nie tutaj!`,
-            `${user}Nie jestem twoim dostawcą PORNO!`,
-            `${user}Nie licz na mnie w sprawie PORNO!`,
-            `${user}Idź się leczyć z tym PORNO!`,
-            `Nie dostaniesz PORNO ode mnie, ${user}!`,
-            `${user}, wykupił subskrypcję na PORNO!`,
-            `${user}, szukał PORNO w Google!`,
-            `${user}, próbował znaleźć PORNO na TikToku!`,
-            `${user}, szukał PORNO na Instagramie!`,
-            `${user}, próbował znaleźć PORNO na Facebooku!`,
-            `${user}, szukał PORNO na Twitterze!`,
-            `${user}, próbował znaleźć PORNO na Reddit!`
+            `${i.user.username}, Oto twoje losowe PORNO: https://www.youtube.com/watch?v=dQw4w9WgXcQ`,
+            `${i.user.username}Ty jakiś zjebany jesteś?`,
+            `${i.user.username}Szukaj sam, nie jestem twoją kurwą!`,
+            `${i.user.username}Nie dostaniesz PORNO ode mnie!`,
+            `${i.user.username}Idź do diabła z tym PORNO!`,
+            `${i.user.username}Nie mam zamiaru ci dawać PORNO!`,
+            `${i.user.username}Szukaj gdzie indziej, nie tutaj!`,
+            `${i.user.username}Nie jestem twoim dostawcą PORNO!`,
+            `${i.user.username}Nie licz na mnie w sprawie PORNO!`,
+            `${i.user.username}Idź się leczyć z tym PORNO!`,
+            `Nie dostaniesz PORNO ode mnie, ${i.user.username}!`,
+            `${i.user.username}, wykupił subskrypcję na PORNO!`,
+            `${i.user.username}, szukał PORNO w Google!`,
+            `${i.user.username}, próbował znaleźć PORNO na TikToku!`,
+            `${i.user.username}, szukał PORNO na Instagramie!`,
+            `${i.user.username}, próbował znaleźć PORNO na Facebooku!`,
+            `${i.user.username}, szukał PORNO na Twitterze!`,
+            `${i.user.username}, próbował znaleźć PORNO na Reddit!`
         ];
         return i.reply(randomFrom(teksty));
     }
 if (name === 'wyruchaj') {
         const teksty = [
-            `${user}Losowo wyruchał ${targetUser}!`,
-            `${user}Znalazł okazję, by wyruchać ${targetUser}!`,
-            `${user}Postanowił wyruchać ${targetUser} bez powodu!`,
-            `${user}Nie mógł się powstrzymać i wyruchał ${targetUser}!`,
-            `${user}Zaskoczył wszystkich, ruchając ${targetUser}!`,
-            `${user}Wykorzystał moment i wyruchał ${targetUser}!`,
-            `${user}Spontanicznie wyruchał ${targetUser}!`,
-            `${user}Zdecydował się na wyruchanie ${targetUser}!`,
-            `${user}Nieoczekiwanie wyruchał ${targetUser}!`,
-            `${user}Zaskoczył wszystkich, wyruchując ${targetUser}!`,
-            `${user}Wyruchał ${targetUser} w najbardziej nieoczekiwany sposób!`,
-            `${user}Losowo wyruchał ${targetUser} w tajemnicy!`,
-            `${user}Znalazł idealny moment, by wyruchać ${targetUser} w ukryciu!`,
-            `${user}Postanowił wyruchać ${targetUser} w niecodzienny sposób!`,
-            `${user}Znalazł idealny moment, by wyruchać ${targetUser}!`,
-            `${user}Nie mógł się oprzeć i wyruchał ${targetUser}!`,
-            `${user}Zaskoczył wszystkich, wyruchując ${targetUser} w tajemnicy!`,
-            `${user}Spontanicznie wyruchał ${targetUser} na oczach wszystkich!`,
-            `${user}Zdecydował się na wyruchanie ${targetUser} w nietypowy sposób!`,
-            `${user}Nieoczekiwanie wyruchał ${targetUser} w środku nocy!`,
-            `${user}Zaskoczył wszystkich, wyruchując ${targetUser} w najbardziej nieoczekiwanym momencie!`
+            `${i.user.username}Losowo wyruchał ${targetUser}!`,
+            `${i.user.username}Znalazł okazję, by wyruchać ${targetUser}!`,
+            `${i.user.username}Postanowił wyruchać ${targetUser} bez powodu!`,
+            `${i.user.username}Nie mógł się powstrzymać i wyruchał ${targetUser}!`,
+            `${i.user.username}Zaskoczył wszystkich, ruchając ${targetUser}!`,
+            `${i.user.username}Wykorzystał moment i wyruchał ${targetUser}!`,
+            `${i.user.username}Spontanicznie wyruchał ${targetUser}!`,
+            `${i.user.username}Zdecydował się na wyruchanie ${targetUser}!`,
+            `${i.user.username}Nieoczekiwanie wyruchał ${targetUser}!`,
+            `${i.user.username}Zaskoczył wszystkich, wyruchując ${targetUser}!`,
+            `${i.user.username}Wyruchał ${targetUser} w najbardziej nieoczekiwany sposób!`,
+            `${i.user.username}Losowo wyruchał ${targetUser} w tajemnicy!`,
+            `${i.user.username}Znalazł idealny moment, by wyruchać ${targetUser} w ukryciu!`,
+            `${i.user.username}Postanowił wyruchać ${targetUser} w niecodzienny sposób!`,
+            `${i.user.username}Znalazł idealny moment, by wyruchać ${targetUser}!`,
+            `${i.user.username}Nie mógł się oprzeć i wyruchał ${targetUser}!`,
+            `${i.user.username}Zaskoczył wszystkich, wyruchując ${targetUser} w tajemnicy!`,
+            `${i.user.username}Spontanicznie wyruchał ${targetUser} na oczach wszystkich!`,
+            `${i.user.username}Zdecydował się na wyruchanie ${targetUser} w nietypowy sposób!`,
+            `${i.user.username}Nieoczekiwanie wyruchał ${targetUser} w środku nocy!`,
+            `${i.user.username}Zaskoczył wszystkich, wyruchując ${targetUser} w najbardziej nieoczekiwanym momencie!`
         ];
         return i.reply(randomFrom(teksty));
     }
@@ -145,26 +161,26 @@ if (name === 'wyruchaj') {
 
     if (name === 'zabierz') {
         const teksty = [
-            `${user}Zabrał godność ${targetUser}`,
-            `${user}Zabrał honor ${targetUser}`,
-            `${user}Zabrał ostatni pierdolony cukierek od ${targetUser}`,
-            `${user}Zabrał szacunek od ${targetUser}`,
-            `${user}Zabrał marzenia od ${targetUser}`,
-            `${user}Zabrał nadzieję od ${targetUser}`,
-            `${user}Zabrał radość od ${targetUser}`,
-            `${user}Zabrał władzę od ${targetUser}`,
-            `${user}Zabrał energię życiową od ${targetUser}`,
-            `${user}Zabrał uśmiech od ${targetUser}`,
-            `${user}Zabrał humor od ${targetUser}`,
-            `${user}Zabrał złudzenia od ${targetUser}`,
-            `${user}Zabrał talent od ${targetUser}`,
-            `${user}Zabrał kreatywność od ${targetUser}`,
-            `${user}Zabrał portfel od ${targetUser}`,
-            `${user}Zabrał telefon od ${targetUser}`,
-            `${user}Zabrał zegarek od ${targetUser}`,
-            `${user}Zabrał klucze od ${targetUser}`,
-            `${user}Zabrał jedzenie od ${targetUser}`,
-            `${user}Zabrał tlen od ${targetUser}`
+            `${i.user.username}Zabrał godność ${targetUser}`,
+            `${i.user.username}Zabrał honor ${targetUser}`,
+            `${i.user.username}Zabrał ostatni pierdolony cukierek od ${targetUser}`,
+            `${i.user.username}Zabrał szacunek od ${targetUser}`,
+            `${i.user.username}Zabrał marzenia od ${targetUser}`,
+            `${i.user.username}Zabrał nadzieję od ${targetUser}`,
+            `${i.user.username}Zabrał radość od ${targetUser}`,
+            `${i.user.username}Zabrał władzę od ${targetUser}`,
+            `${i.user.username}Zabrał energię życiową od ${targetUser}`,
+            `${i.user.username}Zabrał uśmiech od ${targetUser}`,
+            `${i.user.username}Zabrał humor od ${targetUser}`,
+            `${i.user.username}Zabrał złudzenia od ${targetUser}`,
+            `${i.user.username}Zabrał talent od ${targetUser}`,
+            `${i.user.username}Zabrał kreatywność od ${targetUser}`,
+            `${i.user.username}Zabrał portfel od ${targetUser}`,
+            `${i.user.username}Zabrał telefon od ${targetUser}`,
+            `${i.user.username}Zabrał zegarek od ${targetUser}`,
+            `${i.user.username}Zabrał klucze od ${targetUser}`,
+            `${i.user.username}Zabrał jedzenie od ${targetUser}`,
+            `${i.user.username}Zabrał tlen od ${targetUser}`
         ];
         return i.reply(randomFrom(teksty));
     }
@@ -223,54 +239,54 @@ if (name === 'wyruchaj') {
 
     if (name === 'los') {
         const teksty = [
-            `${user}, Los cię jebnie w dupę dzisiaj!`,
-            `${user}, Dzisiaj los cię wkurwi`,
-            `${user}, Nie wiadomo jak, ale coś spierdolisz`,
-            `${user}, Wkurwiasz wszystkich wokół 😎`,
-            `${user}, Dzisiaj pech cię znajdzie`,
-            `${user}, Los cię wyśle na wkurw`,
-            `${user}, Nie wiadomo co się stanie, ale jebanie pewne`,
-            `${user}, Dzisiaj wszystko spierdolisz`,
-            `${user}, Los cię kopie w dupę`,
-            `${user}, Nie licz na szczęście, gnoju`,
-            `${user}, Los wkurwia dzisiaj mocno`,
-            `${user}, Kurde, los dzisiaj jebie`,
-            `${user}, Nie ma nadziei, los wkurwia`,
-            `${user}, Dzisiaj jesteś ofiarą losu`,
-            `${user}, Los wybrał ciebie`,
-            `${user}, Pech cię znajdzie`,
-            `${user}, Los jest brutalny`,
-            `${user}, Dzisiaj jebanie pewne`,
-            `${user}, Nie licz na nic, gnoju`,
-            `${user}, Los działa bez litości`
+            `${i.user.username}, Los cię jebnie w dupę dzisiaj!`,
+            `${i.user.username}, Dzisiaj los cię wkurwi`,
+            `${i.user.username}, Nie wiadomo jak, ale coś spierdolisz`,
+            `${i.user.username}, Wkurwiasz wszystkich wokół 😎`,
+            `${i.user.username}, Dzisiaj pech cię znajdzie`,
+            `${i.user.username}, Los cię wyśle na wkurw`,
+            `${i.user.username}, Nie wiadomo co się stanie, ale jebanie pewne`,
+            `${i.user.username}, Dzisiaj wszystko spierdolisz`,
+            `${i.user.username}, Los cię kopie w dupę`,
+            `${i.user.username}, Nie licz na szczęście, gnoju`,
+            `${i.user.username}, Los wkurwia dzisiaj mocno`,
+            `${i.user.username}, Kurde, los dzisiaj jebie`,
+            `${i.user.username}, Nie ma nadziei, los wkurwia`,
+            `${i.user.username}, Dzisiaj jesteś ofiarą losu`,
+            `${i.user.username}, Los wybrał ciebie`,
+            `${i.user.username}, Pech cię znajdzie`,
+            `${i.user.username}, Los jest brutalny`,
+            `${i.user.username}, Dzisiaj jebanie pewne`,
+            `${i.user.username}, Nie licz na nic, gnoju`,
+            `${i.user.username}, Los działa bez litości`
         ];
         return i.reply(randomFrom(teksty));
     }
 
     if (name === 'lisc') {
         const teksty = [
-            `${targetUser}, dostałeś liścia od ${user}!`,
-            `${targetUser}, liść wpadł w twarz od ${user}!`,
+            `${targetUser}, dostałeś liścia od ${i.user.username}!`,
+            `${targetUser}, liść wpadł w twarz od ${i.user.username}!`,
             `liść trafił ${targetUser}`,
-            `${targetUser}, oberwałeś takim liściem że aż echo poszło od ${user}!`,
-            `${targetUser}, ten liść był tak szybki że aż czas się zatrzymał od ${user}!`,
-            `${targetUser}, ten liść był jak pocisk z kosmosu od ${user}!`,
-            `${targetUser}, liść oberwał ciebie od ${user}!`,
-            `${targetUser}, liscieć uderzył cię z prędkością światła od ${user}!`,
-            `${targetUser}, to był liść z innej planety od ${user}!`,
-            `${targetUser}, liść uderzył cię z taką siłą że aż ziemia zadrżała od ${user}!`,
-            `${targetUser}, liść jak od samego boga od ${user}!`,
-            `${targetUser}, wykurwisty liść trafił cię prosto w twarz od ${user}!`,
-            `${targetUser}, liść spadł na ciebie jak grom z jasnego nieba od ${user}!`,
-            `${targetUser}, lisciasty liść uderzył cię z taką mocą że aż gwiazdy zgasły od ${user}!`,
-            `${targetUser}, lisciasty liść trafił cię z taką siłą że aż powietrze zawirowało od ${user}!`,
-            `${targetUser}, dostal taki wpierdol ze krecik mu sie kręci od ${user}!`,
-            `${targetUser}, ten lisc byl tak mocny ze twoj numer buta zna cale miasto od ${user}!`,
-            `${targetUser}, od tego liscia nos ci krwawi od ${user}!`,
-            `${targetUser}, od tego liścia nie uciekniesz od ${user}!`,
-            `${targetUser}, dostal taki wpierdol ze myślisz że to huragan od ${user}!`,
-            `${targetUser}, dostal eś liścia jak burza od ${user}!`,
-            `${targetUser}, dostales tak mocno że myślisz że to tornado od ${user}!`
+            `${targetUser}, oberwałeś takim liściem że aż echo poszło od ${i.user.username}!`,
+            `${targetUser}, ten liść był tak szybki że aż czas się zatrzymał od ${i.user.username}!`,
+            `${targetUser}, ten liść był jak pocisk z kosmosu od ${i.user.username}!`,
+            `${targetUser}, liść oberwał ciebie od ${i.user.username}!`,
+            `${targetUser}, liscieć uderzył cię z prędkością światła od ${i.user.username}!`,
+            `${targetUser}, to był liść z innej planety od ${i.user.username}!`,
+            `${targetUser}, liść uderzył cię z taką siłą że aż ziemia zadrżała od ${i.user.username}!`,
+            `${targetUser}, liść jak od samego boga od ${i.user.username}!`,
+            `${targetUser}, wykurwisty liść trafił cię prosto w twarz od ${i.user.username}!`,
+            `${targetUser}, liść spadł na ciebie jak grom z jasnego nieba od ${i.user.username}!`,
+            `${targetUser}, lisciasty liść uderzył cię z taką mocą że aż gwiazdy zgasły od ${i.user.username}!`,
+            `${targetUser}, lisciasty liść trafił cię z taką siłą że aż powietrze zawirowało od ${i.user.username}!`,
+            `${targetUser}, dostal taki wpierdol ze krecik mu sie kręci od ${i.user.username}!`,
+            `${targetUser}, ten lisc byl tak mocny ze twoj numer buta zna cale miasto od ${i.user.username}!`,
+            `${targetUser}, od tego liscia nos ci krwawi od ${i.user.username}!`,
+            `${targetUser}, od tego liścia nie uciekniesz od ${i.user.username}!`,
+            `${targetUser}, dostal taki wpierdol ze myślisz że to huragan od ${i.user.username}!`,
+            `${targetUser}, dostal eś liścia jak burza od ${i.user.username}!`,
+            `${targetUser}, dostales tak mocno że myślisz że to tornado od ${i.user.username}!`
         ];
         return i.reply(randomFrom(teksty));
     }
@@ -356,25 +372,25 @@ if (name === 'wyruchaj') {
 
     if (name === 'torcik') {
         const teksty = [
-            `Torcik dla ${targetUser}`,
-            `Daję torcik dla  ${targetUser}`,
-            `Podarowałem torcik dla  ${targetUser}`,
-            `Torcik trafił do ${targetUser}`,
-            `Torcik dla Ciebie, ${targetUser}`,
-            `Smaczny torcik dla  ${targetUser}`,
-            `Torcik wpadł do rąk ${targetUser}`,
-            `Torcik dla bohatera ${targetUser}`,
-            `Torcik specjalnie dla ${targetUser}`,
-            `Torcik z humorem dla ${targetUser}`,
-            `Torcik dla najlepszego ${targetUser}`,
-            `Torcik z miłością dla ${targetUser}`,
-            `Torcik dla epickiego ${targetUser}`,
-            `Torcik dla legendarnego ${targetUser}`,
-            `Torcik dla wkurwionego ${targetUser}`,
-            `Torcik dla słoneczka o imieniu: ${targetUser}`,
-            `Torcik dla tryhard dla ${targetUser}`,
-            `Torcik lvl hard dla ${targetUser}`,
-            `Torcik lvl expert dla ${targetUser}`,
+            `Torcik dla ${targetUser} od ${i.user.username}`,
+            `Daję torcik dla  ${targetUser} od ${i.user.username}`,
+            `Podarowałem torcik dla  ${targetUser} od ${i.user.username}`,
+            `Torcik trafił do ${targetUser} od ${i.user.username}`,
+            `Torcik dla Ciebie, ${targetUser} od ${i.user.username}`,
+            `Smaczny torcik dla  ${targetUser} od ${i.user.username}`,
+            `Torcik wpadł do rąk ${targetUser} od ${i.user.username}`,
+            `Torcik dla bohatera ${targetUser} od ${i.user.username}`,
+            `Torcik specjalnie dla ${targetUser} od ${i.user.username}`,
+            `Torcik z humorem dla ${targetUser} od ${i.user.username}`,
+            `Torcik dla najlepszego ${targetUser} od ${i.user.username}`,
+            `Torcik z miłością dla ${targetUser} od ${i.user.username}`,
+            `Torcik dla epickiego ${targetUser} od ${i.user.username}`,
+            `Torcik dla legendarnego ${targetUser} od ${i.user.username}`,
+            `Torcik dla wkurwionego ${targetUser} od ${i.user.username}`,
+            `Torcik dla słoneczka o imieniu: ${targetUser} od ${i.user.username}`,
+            `Torcik dla tryhard dla ${targetUser} od ${i.user.username}`,
+            `Torcik lvl hard dla ${targetUser} od ${i.user.username}`,
+            `Torcik lvl expert dla ${targetUser} od ${i.user.username}`,
             `Torcik dla wszystkich!`
         ];
         return i.reply(randomFrom(teksty));
