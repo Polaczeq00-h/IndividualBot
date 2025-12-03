@@ -17,7 +17,7 @@ client.once('clientReady', async (c) => {
     const channel = client.channels.cache.get(channelId);
 
     if (channel) {
-        channel.send('Update działa, kurwa.');
+        channel.send('Update działa, kurwa.@everyone');
     } else {
         console.log('Nie znalazłem kanału, pajacu.');
     }
