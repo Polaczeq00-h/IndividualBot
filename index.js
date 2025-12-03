@@ -1,6 +1,7 @@
 import 'dotenv/config';
 // Wprowadzono Partials i ChannelType
 import { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, ChannelType, Partials } from 'discord.js'; 
+import { use } from 'react';
 
 // --- KLIENT I INTENTY ---
 
@@ -24,6 +25,8 @@ const commands = [
     new SlashCommandBuilder().setName('rozkurw').setDescription('Rozkurwia sytuację').setDMPermission(true),
     new SlashCommandBuilder().setName('impreza').setDescription('Opisuje imprezę').setDMPermission(true),
     new SlashCommandBuilder().setName('torcik').setDescription('Daje torcik komuś').addUserOption(o => o.setName('kto').setDescription('Komu dać torcik').setRequired(false)).setDMPermission(true),
+    new SlashCommandBuilder().setName('wyruchaj').setDescription('Losowo wyrycha kogoś').addUserOption(o => o.setName('kto').setDescription('Kogo wyrychać').setRequired(false)).setDMPermission(true),
+    new SlashCommandBuilder().setName('PORNO').setDescription('Wysyła losowe PORNO').setDMPermission(true)
 ].map(c => c.toJSON());
 
 // ------------------- LOGIKA INTERAKCJI -------------------
@@ -53,7 +56,52 @@ client.on('interactionCreate', async i => {
     
     // Walidacja użycia na serwerze (pominięta, ponieważ targetUser i tak jest zdefiniowany)
     // if (!i.inGuild() && !user && name !== 'co' && name !== 'rozkurw' && name !== 'impreza' && name !== 'los') { ... }
-
+    if (name === 'PORNO') {
+        const teksty = [
+            `${user}, Oto twoje losowe PORNO: https://www.youtube.com/watch?v=dQw4w9WgXcQ`,
+            `${user}Ty jakiś zjebany jesteś?`,
+            `${user}Szukaj sam, nie jestem twoją kurwą!`,
+            `${user}Nie dostaniesz PORNO ode mnie!`,
+            `${user}Idź do diabła z tym PORNO!`,
+            `${user}Nie mam zamiaru ci dawać PORNO!`,
+            `${user}Szukaj gdzie indziej, nie tutaj!`,
+            `${user}Nie jestem twoim dostawcą PORNO!`,
+            `${user}Nie licz na mnie w sprawie PORNO!`,
+            `${user}Idź się leczyć z tym PORNO!`,
+            `Nie dostaniesz PORNO ode mnie, ${user}!`,
+            `${user}, wykupił subskrypcję na PORNO!`,
+            `${user}, szukał PORNO w Google!`,
+            `${user}, próbował znaleźć PORNO na TikToku!`,
+            `${user}, szukał PORNO na Instagramie!`,
+            `${user}, próbował znaleźć PORNO na Facebooku!`,
+            `${user}, szukał PORNO na Twitterze!`,
+            `${user}, próbował znaleźć PORNO na Reddit!`
+        ];
+        return i.reply(randomFrom(teksty));
+    }
+if (name === 'wyruchaj') {
+        const teksty = [
+            `${user}Losowo wyrychał ${targetUser}`,
+            `${user}Znalazł okazję, by wyrychać ${targetUser}`,
+            `${user}Postanowił wyrychać ${targetUser} bez powodu`,
+            `${user}Nie mógł się powstrzymać i wyrychał ${targetUser}`,
+            `${user}Zaskoczył wszystkich, wyrywając ${targetUser}`,
+            `${user}Wykorzystał moment i wyrychał ${targetUser}`,
+            `${user}Spontanicznie wyrychał ${targetUser}`,
+            `${user}Zdecydował się na wyrychanie ${targetUser}`,
+            `${user}Nieoczekiwanie wyrychał ${targetUser}`,
+            `${user}Zaskoczył wszystkich, wyrywając ${targetUser}`
+            `${user}Postanowił wyrychać ${targetUser} w niecodzienny sposób`,
+            `${user}Znalazł idealny moment, by wyrychać ${targetUser}`,
+            `${user}Nie mógł się oprzeć i wyrychał ${targetUser}`,
+            `${user}Zaskoczył wszystkich, wyrywając ${targetUser} w tajemnicy`,
+            `${user}Spontanicznie wyrychał ${targetUser} na oczach wszystkich`,
+            `${user}Zdecydował się na wyrychanie ${targetUser} w nietypowy sposób`,
+            `${user}Nieoczekiwanie wyrychał ${targetUser} w środku nocy`,
+            `${user}Zaskoczył wszystkich, wyrywając ${targetUser} w najbardziej nieoczekiwanym momencie`
+        ];
+        return i.reply(randomFrom(teksty));
+    }
     if (name === 'morda') {
         const teksty = [
             `${targetUser} wygląda jak patch notesy po pijaku`,
@@ -82,26 +130,26 @@ client.on('interactionCreate', async i => {
 
     if (name === 'zabierz') {
         const teksty = [
-            `Zabrałem godność ${targetUser}`,
-            `Zabrałem honor ${targetUser}`,
-            `Zabrałem ostatni pierdolony cukierek od ${targetUser}`,
-            `Zabrałem szacunek od ${targetUser}`,
-            `Zabrałem marzenia od ${targetUser}`,
-            `Zabrałem nadzieję od ${targetUser}`,
-            `Zabrałem radość od ${targetUser}`,
-            `Zabrałem władzę od ${targetUser}`,
-            `Zabrałem energię życiową od ${targetUser}`,
-            `Zabrałem uśmiech od ${targetUser}`,
-            `Zabrałem humor od ${targetUser}`,
-            `Zabrałem złudzenia od ${targetUser}`,
-            `Zabrałem talent od ${targetUser}`,
-            `Zabrałem kreatywność od ${targetUser}`,
-            `Zabrałem portfel od ${targetUser}`,
-            `Zabrałem telefon od ${targetUser}`,
-            `Zabrałem zegarek od ${targetUser}`,
-            `Zabrałem klucze od ${targetUser}`,
-            `Zabrałem jedzenie od ${targetUser}`,
-            `Zabrałem tlen od ${targetUser}`
+            `${user}Zabrał godność ${targetUser}`,
+            `${user}Zabrał honor ${targetUser}`,
+            `${user}Zabrał ostatni pierdolony cukierek od ${targetUser}`,
+            `${user}Zabrał szacunek od ${targetUser}`,
+            `${user}Zabrał marzenia od ${targetUser}`,
+            `${user}Zabrał nadzieję od ${targetUser}`,
+            `${user}Zabrał radość od ${targetUser}`,
+            `${user}Zabrał władzę od ${targetUser}`,
+            `${user}Zabrał energię życiową od ${targetUser}`,
+            `${user}Zabrał uśmiech od ${targetUser}`,
+            `${user}Zabrał humor od ${targetUser}`,
+            `${user}Zabrał złudzenia od ${targetUser}`,
+            `${user}Zabrał talent od ${targetUser}`,
+            `${user}Zabrał kreatywność od ${targetUser}`,
+            `${user}Zabrał portfel od ${targetUser}`,
+            `${user}Zabrał telefon od ${targetUser}`,
+            `${user}Zabrał zegarek od ${targetUser}`,
+            `${user}Zabrał klucze od ${targetUser}`,
+            `${user}Zabrał jedzenie od ${targetUser}`,
+            `${user}Zabrał tlen od ${targetUser}`
         ];
         return i.reply(randomFrom(teksty));
     }
