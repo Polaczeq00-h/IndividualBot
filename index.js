@@ -1,7 +1,6 @@
 import 'dotenv/config';
 // Wprowadzono Partials i ChannelType
 import { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, ChannelType, Partials } from 'discord.js'; 
-import { use } from 'react';
 
 // --- KLIENT I INTENTY ---
 
@@ -11,6 +10,20 @@ const client = new Client({
     partials: [Partials.Channel] 
 });
 
+client.once('clientReady', async (c) => {
+    console.log(`Zalogowany jako ${c.user.tag}!`);
+
+    const channelId = 'ID-KANAŁU-TU';
+    const channel = client.channels.cache.get(channelId);
+
+    if (channel) {
+        channel.send('Update działa, kurwa.');
+    } else {
+        console.log('Nie znalazłem kanału, pajacu.');
+    }
+});
+
+
 // ------------------- KOMENDY -------------------
 const commands = [
     new SlashCommandBuilder().setName('co').setDescription('Odpowiada gówno i pokazuje latency').setDMPermission(true),
@@ -18,7 +31,6 @@ const commands = [
     new SlashCommandBuilder().setName('zabierz').setDescription('Zabiera coś komuś').addUserOption(o => o.setName('kto').setDescription('Komu zabrać').setRequired(false)).setDMPermission(true),
     new SlashCommandBuilder().setName('zajeb').setDescription('Daje mocne jebnięcie komuś').addUserOption(o => o.setName('kto').setDescription('Komu').setRequired(false)).setDMPermission(true),
     new SlashCommandBuilder().setName('wkurw').setDescription('Wkurwia kogoś').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(false)).setDMPermission(true),
-    new SlashCommandBuilder().setName('jebanie').setDescription('Opisuje jebnięcie').addUserOption(o => o.setName('kto').setDescription('Kogo').setRequired(false)).setDMPermission(true),
     new SlashCommandBuilder().setName('los').setDescription('Losuje losowo cokolwiek wkurwiającego').addUserOption(o => o.setName('kto').setDescription('Dla kogo losować').setRequired(false)).setDMPermission(true),
     new SlashCommandBuilder().setName('lisc').setDescription('Wysyła losowego liścia').addUserOption(o => o.setName('kto').setDescription('Komu dać liścia').setRequired(false)).setDMPermission(true),
     new SlashCommandBuilder().setName('love').setDescription('Losowy komplement miłosny').addUserOption(o => o.setName('kto').setDescription('Komu dać komplement').setRequired(false)).setDMPermission(true),
@@ -81,24 +93,27 @@ client.on('interactionCreate', async i => {
     }
 if (name === 'wyruchaj') {
         const teksty = [
-            `${user}Losowo wyrychał ${targetUser}`,
-            `${user}Znalazł okazję, by wyrychać ${targetUser}`,
-            `${user}Postanowił wyrychać ${targetUser} bez powodu`,
-            `${user}Nie mógł się powstrzymać i wyrychał ${targetUser}`,
-            `${user}Zaskoczył wszystkich, wyrywając ${targetUser}`,
-            `${user}Wykorzystał moment i wyrychał ${targetUser}`,
-            `${user}Spontanicznie wyrychał ${targetUser}`,
-            `${user}Zdecydował się na wyrychanie ${targetUser}`,
-            `${user}Nieoczekiwanie wyrychał ${targetUser}`,
-            `${user}Zaskoczył wszystkich, wyrywając ${targetUser}`
-            `${user}Postanowił wyrychać ${targetUser} w niecodzienny sposób`,
-            `${user}Znalazł idealny moment, by wyrychać ${targetUser}`,
-            `${user}Nie mógł się oprzeć i wyrychał ${targetUser}`,
-            `${user}Zaskoczył wszystkich, wyrywając ${targetUser} w tajemnicy`,
-            `${user}Spontanicznie wyrychał ${targetUser} na oczach wszystkich`,
-            `${user}Zdecydował się na wyrychanie ${targetUser} w nietypowy sposób`,
-            `${user}Nieoczekiwanie wyrychał ${targetUser} w środku nocy`,
-            `${user}Zaskoczył wszystkich, wyrywając ${targetUser} w najbardziej nieoczekiwanym momencie`
+            `${user}Losowo wyruchał ${targetUser}!`,
+            `${user}Znalazł okazję, by wyruchać ${targetUser}!`,
+            `${user}Postanowił wyruchać ${targetUser} bez powodu!`,
+            `${user}Nie mógł się powstrzymać i wyruchał ${targetUser}!`,
+            `${user}Zaskoczył wszystkich, ruchając ${targetUser}!`,
+            `${user}Wykorzystał moment i wyruchał ${targetUser}!`,
+            `${user}Spontanicznie wyruchał ${targetUser}!`,
+            `${user}Zdecydował się na wyruchanie ${targetUser}!`,
+            `${user}Nieoczekiwanie wyruchał ${targetUser}!`,
+            `${user}Zaskoczył wszystkich, wyruchując ${targetUser}!`,
+            `${user}Wyruchał ${targetUser} w najbardziej nieoczekiwany sposób!`,
+            `${user}Losowo wyruchał ${targetUser} w tajemnicy!`,
+            `${user}Znalazł idealny moment, by wyruchać ${targetUser} w ukryciu!`,
+            `${user}Postanowił wyruchać ${targetUser} w niecodzienny sposób!`,
+            `${user}Znalazł idealny moment, by wyruchać ${targetUser}!`,
+            `${user}Nie mógł się oprzeć i wyruchał ${targetUser}!`,
+            `${user}Zaskoczył wszystkich, wyruchując ${targetUser} w tajemnicy!`,
+            `${user}Spontanicznie wyruchał ${targetUser} na oczach wszystkich!`,
+            `${user}Zdecydował się na wyruchanie ${targetUser} w nietypowy sposób!`,
+            `${user}Nieoczekiwanie wyruchał ${targetUser} w środku nocy!`,
+            `${user}Zaskoczył wszystkich, wyruchując ${targetUser} w najbardziej nieoczekiwanym momencie!`
         ];
         return i.reply(randomFrom(teksty));
     }
@@ -206,81 +221,56 @@ if (name === 'wyruchaj') {
         return i.reply(randomFrom(teksty));
     }
 
-    if (name === 'jebanie') {
-        const teksty = [
-            `${targetUser} wyruchał wszystko na swojej drodze`,
-            `${targetUser} jebie jak szalony`,
-            `${targetUser} ma jebanie na maxa`,
-            `${targetUser} jebie jak bug w kodzie`,
-            `${targetUser} jebie jak patch notes`,
-            `${targetUser} jebie jak serwer w crashu`,
-            `${targetUser} jebie jak laptop bez baterii`,
-            `${targetUser} jebie jak update systemu`,
-            `${targetUser} jebie jak troll w internecie`,
-            `${targetUser} jebie jak kabel USB po przepięciu`,
-            `${targetUser} jebie jak CPU po OC`,
-            `${targetUser} jebie jak monitor CRT`,
-            `${targetUser} jebie jak router po restarcie`,
-            `${targetUser} jebie jak szalony!!!`,
-            `${targetUser} jebie jak nigdy wcześniej`,
-            `${targetUser} jebie jakby jutra miało nie być`,
-
-        ];
-        return i.reply(randomFrom(teksty));
-    }
-
     if (name === 'los') {
         const teksty = [
-            'Los cię jebnie w dupę dzisiaj!',
-            'Nie wiadomo jak, ale coś spierdolisz',
-            'Wkurwiasz wszystkich wokół 😎',
-            'Dzisiaj pech cię znajdzie',
-            'Los cię wyśle na wkurw',
-            'Nie wiadomo co się stanie, ale jebanie pewne',
-            'Dzisiaj wszystko spierdolisz',
-            'Los cię kopie w dupę',
-            'Nie licz na szczęście, gnoju',
-            'Los wkurwia dzisiaj mocno',
-            'Dzisiaj jebanie w toku',
-            'Kurde, los dzisiaj jebie',
-            'Nie ma nadziei, los wkurwia',
-            'Dzisiaj jesteś ofiarą losu',
-            'Los wybrał ciebie',
-            'Pech cię znajdzie',
-            'Los jest brutalny',
-            'Dzisiaj jebanie pewne',
-            'Nie licz na nic, gnoju',
-            'Los działa bez litości'
+            `${user}, Los cię jebnie w dupę dzisiaj!`,
+            `${user}, Dzisiaj los cię wkurwi`,
+            `${user}, Nie wiadomo jak, ale coś spierdolisz`,
+            `${user}, Wkurwiasz wszystkich wokół 😎`,
+            `${user}, Dzisiaj pech cię znajdzie`,
+            `${user}, Los cię wyśle na wkurw`,
+            `${user}, Nie wiadomo co się stanie, ale jebanie pewne`,
+            `${user}, Dzisiaj wszystko spierdolisz`,
+            `${user}, Los cię kopie w dupę`,
+            `${user}, Nie licz na szczęście, gnoju`,
+            `${user}, Los wkurwia dzisiaj mocno`,
+            `${user}, Kurde, los dzisiaj jebie`,
+            `${user}, Nie ma nadziei, los wkurwia`,
+            `${user}, Dzisiaj jesteś ofiarą losu`,
+            `${user}, Los wybrał ciebie`,
+            `${user}, Pech cię znajdzie`,
+            `${user}, Los jest brutalny`,
+            `${user}, Dzisiaj jebanie pewne`,
+            `${user}, Nie licz na nic, gnoju`,
+            `${user}, Los działa bez litości`
         ];
         return i.reply(randomFrom(teksty));
     }
 
     if (name === 'lisc') {
         const teksty = [
-            `${targetUser}, dostałeś liścia!`,
-            `${targetUser}, liść wpadł w twarz`,
-            `${targetUser}, liść przykrył twoją głowę`,
-            `${targetUser}, liść frunie w powietrzu`,
+            `${targetUser}, dostałeś liścia od ${user}!`,
+            `${targetUser}, liść wpadł w twarz od ${user}!`,
             `liść trafił ${targetUser}`,
-            `${targetUser}, oberwałeś takim liściem że aż echo poszło`,
-            `${targetUser}, ten liść był tak szybki że aż czas się zatrzymał`,
-            `${targetUser}, ten liść był jak pocisk z kosmosu`,
-            `${targetUser}, liść oberwał ciebie`,
-            `${targetUser}, liscieć uderzył cię z prędkością światła`,
-            `${targetUser}, to był liść z innej planety`,
-            `${targetUser}, liść uderzył cię z taką siłą że aż ziemia zadrżała`,
-            `${targetUser}, liść jak od samego boga`,
-            `${targetUser}, wykurwisty liść trafił cię prosto w twarz`,
-            `${targetUser}, liść spadł na ciebie jak grom z jasnego nieba`,
-            `${targetUser}, lisciasty liść uderzył cię z taką mocą że aż gwiazdy zgasły`,
-            `${targetUser}, lisciasty liść trafił cię z taką siłą że aż powietrze zawirowało`,
-            `${targetUser}, dostal taki wpierdol ze kreciki mu sie kreci`,
-            `${targetUser}, ten lisc byl tak mocny ze twoj numer buta zna cale miasto`,
-            `${targetUser}, od tego liscia nos ci krwawi`,
-            `${targetUser}, od tego liścia nie uciekniesz`,
-            `${targetUser}, dostal taki wpierdol ze myślisz że to huragan`,
-            `${targetUser}, dostal eś liścia jak burza`,
-            `${targetUser}, dostales tak mocno że myślisz że to tornado`
+            `${targetUser}, oberwałeś takim liściem że aż echo poszło od ${user}!`,
+            `${targetUser}, ten liść był tak szybki że aż czas się zatrzymał od ${user}!`,
+            `${targetUser}, ten liść był jak pocisk z kosmosu od ${user}!`,
+            `${targetUser}, liść oberwał ciebie od ${user}!`,
+            `${targetUser}, liscieć uderzył cię z prędkością światła od ${user}!`,
+            `${targetUser}, to był liść z innej planety od ${user}!`,
+            `${targetUser}, liść uderzył cię z taką siłą że aż ziemia zadrżała od ${user}!`,
+            `${targetUser}, liść jak od samego boga od ${user}!`,
+            `${targetUser}, wykurwisty liść trafił cię prosto w twarz od ${user}!`,
+            `${targetUser}, liść spadł na ciebie jak grom z jasnego nieba od ${user}!`,
+            `${targetUser}, lisciasty liść uderzył cię z taką mocą że aż gwiazdy zgasły od ${user}!`,
+            `${targetUser}, lisciasty liść trafił cię z taką siłą że aż powietrze zawirowało od ${user}!`,
+            `${targetUser}, dostal taki wpierdol ze krecik mu sie kręci od ${user}!`,
+            `${targetUser}, ten lisc byl tak mocny ze twoj numer buta zna cale miasto od ${user}!`,
+            `${targetUser}, od tego liscia nos ci krwawi od ${user}!`,
+            `${targetUser}, od tego liścia nie uciekniesz od ${user}!`,
+            `${targetUser}, dostal taki wpierdol ze myślisz że to huragan od ${user}!`,
+            `${targetUser}, dostal eś liścia jak burza od ${user}!`,
+            `${targetUser}, dostales tak mocno że myślisz że to tornado od ${user}!`
         ];
         return i.reply(randomFrom(teksty));
     }
