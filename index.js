@@ -13,7 +13,7 @@ const client = new Client({
 client.once('clientReady', async (c) => {
     console.log(`Zalogowany jako ${c.user.tag}!`);
 
-    const channel = client.channels.cache.get('1445670513153413203');
+    const channel = client.channels.cache.get('1445878372478484540'); // ID kanału do powiadomień o update'ach
     if (!channel) return console.log('Nie znalazłem kanału, pajacu.');
 
     // Pobieramy ostatni commit z GitHub
