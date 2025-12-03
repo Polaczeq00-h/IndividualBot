@@ -114,7 +114,7 @@ client.on('interactionCreate', async i => {
 }
     if (name === 'porno') {
         const teksty = [
-            `<@${i.user.id}>, Oto twoje losowe PORNO: https://www.youtube.com/watch?v=dQw4w9WgXcQ`,
+            `<@${i.user.id}>, Oto twoje losowe PORNO: https://tinyurl.com/freeporn983724623764`,
             `<@${i.user.id}>Ty jakiś zjebany jesteś?`,
             `<@${i.user.id}>Szukaj sam, nie jestem twoją kurwą!`,
             `<@${i.user.id}>Nie dostaniesz PORNO ode mnie!`,
