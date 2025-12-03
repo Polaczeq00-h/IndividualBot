@@ -38,7 +38,7 @@ const commands = [
     new SlashCommandBuilder().setName('impreza').setDescription('Opisuje imprezę').setDMPermission(true),
     new SlashCommandBuilder().setName('torcik').setDescription('Daje torcik komuś').addUserOption(o => o.setName('kto').setDescription('Komu dać torcik').setRequired(false)).setDMPermission(true),
     new SlashCommandBuilder().setName('wyruchaj').setDescription('Losowo wyrycha kogoś').addUserOption(o => o.setName('kto').setDescription('Kogo wyrychać').setRequired(false)).setDMPermission(true),
-    new SlashCommandBuilder().setName('PORNO').setDescription('Wysyła losowe PORNO').setDMPermission(true)
+    new SlashCommandBuilder().setName('porno').setDescription('Wysyła losowe PORNO').setDMPermission(true)
 ].map(c => c.toJSON());
 
 // ------------------- LOGIKA INTERAKCJI -------------------
@@ -68,7 +68,7 @@ client.on('interactionCreate', async i => {
     
     // Walidacja użycia na serwerze (pominięta, ponieważ targetUser i tak jest zdefiniowany)
     // if (!i.inGuild() && !user && name !== 'co' && name !== 'rozkurw' && name !== 'impreza' && name !== 'los') { ... }
-    if (name === 'PORNO') {
+    if (name === 'porno') {
         const teksty = [
             `${user}, Oto twoje losowe PORNO: https://www.youtube.com/watch?v=dQw4w9WgXcQ`,
             `${user}Ty jakiś zjebany jesteś?`,
