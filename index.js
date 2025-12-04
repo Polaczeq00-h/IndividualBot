@@ -153,6 +153,29 @@ const commands = [
 
     // RESET
     new SlashCommandBuilder().setName('reset').setDescription('Resetuje bota').setDMPermission(true),
+
+    // GRY I ZABAWY
+    new SlashCommandBuilder().setName('rzutmoneta').setDescription('Rzut monetą - orzeł lub reszka').setDMPermission(true),
+
+    new SlashCommandBuilder()
+        .setName('kostka')
+        .setDescription('Rzut kostką')
+        .addIntegerOption(o => o.setName('sciany').setDescription('Liczba ścian (domyślnie 6)').setRequired(false))
+        .setDMPermission(true),
+
+    new SlashCommandBuilder().setName('papierokamiennozaniec').setDescription('Papier, Kamień, Nożyce vs Bot').setDMPermission(true),
+
+    new SlashCommandBuilder().setName('wisielec').setDescription('Gra w wisielca').setDMPermission(true),
+
+    new SlashCommandBuilder().setName('quiz').setDescription('Quiz z pytaniami').setDMPermission(true),
+
+    new SlashCommandBuilder().setName('8kul').setDescription('Magic 8-ball - pytaj i losuj odpowiedź').setDMPermission(true),
+
+    new SlashCommandBuilder()
+        .setName('szansa')
+        .setDescription('Ile szans że coś się uda')
+        .addIntegerOption(o => o.setName('procent').setDescription('Procent (0-100)').setRequired(false))
+        .setDMPermission(true),
 ].map(c => c.toJSON());
 
 // ------------------- REJESTR KOMEND -------------------
@@ -309,103 +332,230 @@ client.on('interactionCreate', async i => {
             await i.reply('Reset pomyślny');
             process.exit(0);
         }
+
+        // GRY I ZABAWY
+        if (name === 'rzutmoneta') {
+            const wynik = Math.random() > 0.5 ? 'Orzeł 🦅' : 'Reszka 🪙';
+            return i.reply(`<@${i.user.id}> rzucił monetą...\n**${wynik}**`);
+        }
+
+        if (name === 'kostka') {
+            const sciany = i.options?.getInteger('sciany') || 6;
+            if (sciany < 2 || sciany > 100) {
+                return i.reply('Kostka musi mieć 2-100 ścian!');
+            }
+            const wynik = Math.floor(Math.random() * sciany) + 1;
+            return i.reply(`🎲 <@${i.user.id}> rzucił kostką d${sciany}...\n**Wynik: ${wynik}**`);
+        }
+
+        if (name === 'papierokamiennozaniec') {
+            const opcje = ['Papier 📄', 'Kamień 🪨', 'Nożyce ✂️'];
+            const botChoice = opcje[Math.floor(Math.random() * opcje.length)];
+            
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder().setCustomId(`pkn_papier_${i.user.id}`).setLabel('Papier 📄').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId(`pkn_kamien_${i.user.id}`).setLabel('Kamień 🪨').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId(`pkn_nozyce_${i.user.id}`).setLabel('Nożyce ✂️').setStyle(ButtonStyle.Primary)
+                );
+
+            return i.reply({
+                content: `<@${i.user.id}> vs Bot\nBot wybrał: **${botChoice}**\nWybierz swoją opcję:`,
+                components: [row]
+            });
+        }
+
+        if (name === 'wisielec') {
+            const slowa = ['JAVASCRIPT', 'DISCORD', 'NODEJS', 'JAVASCRIPT', 'GITHUB', 'TELEGRAM', 'PYTHON'];
+            const slowo = slowa[Math.floor(Math.random() * slowa.length)];
+            const gameId = `hangman_${i.user.id}_${Date.now()}`;
+            
+            tictacGames.set(gameId, {
+                word: slowo,
+                guessed: [],
+                wrong: 0,
+                type: 'hangman'
+            });
+
+            const display = slowo.split('').map(c => tictacGames.get(gameId).guessed.includes(c) ? c : '_').join(' ');
+            return i.reply(`🎮 Wisielec!\nSłowo: ${display}\nBłędy: 0/6`);
+        }
+
+        if (name === 'quiz') {
+            const quizzes = [
+                { q: 'Ile jest kontinentów?', a: 'siedem', wrongAnswers: ['osiem', 'sześć'] },
+                { q: 'Jaka jest stolica Polski?', a: 'warszawa', wrongAnswers: ['kraków', 'wrocław'] },
+                { q: 'Ile wynosi 2+2?', a: 'cztery', wrongAnswers: ['pięć', 'trzy'] },
+                { q: 'Jaki jest największy ocean?', a: 'spokojny', wrongAnswers: ['atlantycki', 'indyjski'] }
+            ];
+            
+            const quiz = quizzes[Math.floor(Math.random() * quizzes.length)];
+            const answers = [quiz.a, ...quiz.wrongAnswers].sort(() => Math.random() - 0.5);
+            
+            const buttons = answers.map((ans, i) => 
+                new ButtonBuilder().setCustomId(`quiz_${ans === quiz.a ? 'correct' : 'wrong'}_${i}`).setLabel(ans).setStyle(ans === quiz.a ? ButtonStyle.Success : ButtonStyle.Danger)
+            );
+            
+            const row = new ActionRowBuilder().addComponents(buttons);
+            
+            return i.reply({
+                content: `❓ **${quiz.q}**`,
+                components: [row]
+            });
+        }
+
+        if (name === '8kul') {
+            const odpowiedzi = [
+                'Tak 👍',
+                'Nie 👎',
+                'Może później 🤷',
+                'Wyglądów dobrze ✨',
+                'Na pewno nie ❌',
+                'Zdecydowanie tak ✅',
+                'Nie wiem 🤔',
+                'Chwileczka... 🎱'
+            ];
+            const wynik = odpowiedzi[Math.floor(Math.random() * odpowiedzi.length)];
+            return i.reply(`🎱 Magic 8-ball odpowiada:\n**${wynik}**`);
+        }
+
+        if (name === 'szansa') {
+            const procent = i.options?.getInteger('procent') ?? Math.floor(Math.random() * 101);
+            if (procent < 0 || procent > 100) {
+                return i.reply('Procent musi być między 0 a 100!');
+            }
+            
+            const szansa = Math.random() * 100;
+            const wynik = szansa <= procent ? '✅ SIĘ UDA!' : '❌ SIĘ NIE UDA!';
+            return i.reply(`<@${i.user.id}> szansa: **${procent}%**\nLos: ${Math.floor(szansa)}%\n${wynik}`);
+        }
     }
 
     // Obsługa przycisków
     if (i.isButton()) {
-        const [action, index, gameId] = i.customId.split('_');
+        const [action, ...rest] = i.customId.split('_');
         
-        if (action !== 'ttt') return;
-
-        const game = tictacGames.get(gameId);
-        if (!game) return i.reply({ content: 'Gra wygasła!', ephemeral: true });
-
-        // Sprawdzenie czyjej kolei
-        if (game.turn !== i.user.id) {
-            return i.reply({ content: 'Nie Twoja kolej!', ephemeral: true });
-        }
-
-        const idx = parseInt(index);
-        if (game.board[idx] !== '⬜') {
-            return i.reply({ content: 'Pole zajęte!', ephemeral: true });
-        }
-
-        // Ruch gracza
-        const symbol = game.turn === game.player1 ? '⭕' : '❌';
-        game.board[idx] = symbol;
-
-        // Sprawdzenie wygranej
-        const checkWin = (board) => {
-            const lines = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], // wiersze
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], // kolumny
-                [0, 4, 8], [2, 4, 6] // przekątne
-            ];
+        // TIC TAC TOE
+        if (action === 'ttt') {
+            const [index, gameId] = rest;
             
-            for (let line of lines) {
-                if (board[line[0]] !== '⬜' &&
-                    board[line[0]] === board[line[1]] &&
-                    board[line[1]] === board[line[2]]) {
-                    return board[line[0]];
-                }
+            const game = tictacGames.get(gameId);
+            if (!game) return i.reply({ content: 'Gra wygasła!', ephemeral: true });
+
+            // Sprawdzenie czyjej kolei
+            if (game.turn !== i.user.id) {
+                return i.reply({ content: 'Nie Twoja kolej!', ephemeral: true });
             }
-            return null;
-        };
 
-        const winner = checkWin(game.board);
-        const isBoardFull = !game.board.includes('⬜');
+            const idx = parseInt(index);
+            if (game.board[idx] !== '⬜') {
+                return i.reply({ content: 'Pole zajęte!', ephemeral: true });
+            }
 
-        if (winner) {
-            tictacGames.delete(gameId);
-            const winnerName = winner === '⭕' ? game.player1Name : game.player2Name;
+            // Ruch gracza
+            const symbol = game.turn === game.player1 ? '⭕' : '❌';
+            game.board[idx] = symbol;
+
+            // Sprawdzenie wygranej
+            const checkWin = (board) => {
+                const lines = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // wiersze
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // kolumny
+                    [0, 4, 8], [2, 4, 6] // przekątne
+                ];
+                
+                for (let line of lines) {
+                    if (board[line[0]] !== '⬜' &&
+                        board[line[0]] === board[line[1]] &&
+                        board[line[1]] === board[line[2]]) {
+                        return board[line[0]];
+                    }
+                }
+                return null;
+            };
+
+            const winner = checkWin(game.board);
+            const isBoardFull = !game.board.includes('⬜');
+
+            if (winner) {
+                tictacGames.delete(gameId);
+                const winnerName = winner === '⭕' ? game.player1Name : game.player2Name;
+                const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
+                
+                return i.update({
+                    content: `🎉 **${winnerName}** wygrał!\n\`\`\`\n${boardStr}\n\`\`\``,
+                    components: []
+                });
+            }
+
+            if (isBoardFull) {
+                tictacGames.delete(gameId);
+                const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
+                
+                return i.update({
+                    content: `🤝 Remis!\n\`\`\`\n${boardStr}\n\`\`\``,
+                    components: []
+                });
+            }
+
+            // Zmiana tury
+            game.turn = game.turn === game.player1 ? game.player2 : game.player1;
+
             const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
-            
+            const nextPlayer = game.turn === game.player1 ? game.player1Name : game.player2Name;
+            const nextSymbol = game.turn === game.player1 ? '⭕' : '❌';
+
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder().setCustomId(`ttt_0_${gameId}`).setLabel('1').setStyle(ButtonStyle.Secondary).setDisabled(game.board[0] !== '⬜'),
+                    new ButtonBuilder().setCustomId(`ttt_1_${gameId}`).setLabel('2').setStyle(ButtonStyle.Secondary).setDisabled(game.board[1] !== '⬜'),
+                    new ButtonBuilder().setCustomId(`ttt_2_${gameId}`).setLabel('3').setStyle(ButtonStyle.Secondary).setDisabled(game.board[2] !== '⬜')
+                );
+            const row2 = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder().setCustomId(`ttt_3_${gameId}`).setLabel('4').setStyle(ButtonStyle.Secondary).setDisabled(game.board[3] !== '⬜'),
+                    new ButtonBuilder().setCustomId(`ttt_4_${gameId}`).setLabel('5').setStyle(ButtonStyle.Secondary).setDisabled(game.board[4] !== '⬜'),
+                    new ButtonBuilder().setCustomId(`ttt_5_${gameId}`).setLabel('6').setStyle(ButtonStyle.Secondary).setDisabled(game.board[5] !== '⬜')
+                );
+            const row3 = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder().setCustomId(`ttt_6_${gameId}`).setLabel('7').setStyle(ButtonStyle.Secondary).setDisabled(game.board[6] !== '⬜'),
+                    new ButtonBuilder().setCustomId(`ttt_7_${gameId}`).setLabel('8').setStyle(ButtonStyle.Secondary).setDisabled(game.board[7] !== '⬜'),
+                    new ButtonBuilder().setCustomId(`ttt_8_${gameId}`).setLabel('9').setStyle(ButtonStyle.Secondary).setDisabled(game.board[8] !== '⬜')
+                );
+
             return i.update({
-                content: `🎉 **${winnerName}** wygrał!\n\`\`\`\n${boardStr}\n\`\`\``,
-                components: []
+                content: `Kolko i Krzyzyk PvP!\n<@${game.player1}> (⭕) vs <@${game.player2}> (❌)\nRuch: <@${game.turn}> (${nextSymbol})\n\`\`\`\n${boardStr}\n\`\`\``,
+                components: [row, row2, row3]
             });
         }
 
-        if (isBoardFull) {
-            tictacGames.delete(gameId);
-            const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
+        // PAPIER KAMIEŃ NOŻYCE
+        if (action === 'pkn') {
+            const [choice, userId] = rest;
             
-            return i.update({
-                content: `🤝 Remis!\n\`\`\`\n${boardStr}\n\`\`\``,
-                components: []
-            });
+            if (i.user.id !== userId) {
+                return i.reply({ content: 'To nie Twoja gra!', ephemeral: true });
+            }
+
+            const choices = { papier: '📄', kamien: '🪨', nozyce: '✂️' };
+            const botChoices = ['papier', 'kamien', 'nozyce'];
+            const botChoice = botChoices[Math.floor(Math.random() * botChoices.length)];
+
+            const results = {
+                papier: { kamien: 'Papier zakrywa Kamień! 🎉 WYGRAŁEŚ!', nozyce: 'Nożyce tną Papier! ❌ PRZEGRAŁEŚ!', papier: 'Remis! 🤝' },
+                kamien: { nozyce: 'Kamień tępe Nożyce! 🎉 WYGRAŁEŚ!', papier: 'Papier zakrywa Kamień! ❌ PRZEGRAŁEŚ!', kamien: 'Remis! 🤝' },
+                nozyce: { papier: 'Nożyce tną Papier! 🎉 WYGRAŁEŚ!', kamien: 'Kamień tępe Nożyce! ❌ PRZEGRAŁEŚ!', nozyce: 'Remis! 🤝' }
+            };
+
+            return i.reply(`${choices[choice]} vs ${choices[botChoice]}\n${results[choice][botChoice]}`);
         }
 
-        // Zmiana tury
-        game.turn = game.turn === game.player1 ? game.player2 : game.player1;
-
-        const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
-        const nextPlayer = game.turn === game.player1 ? game.player1Name : game.player2Name;
-        const nextSymbol = game.turn === game.player1 ? '⭕' : '❌';
-
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder().setCustomId(`ttt_0_${gameId}`).setLabel('1').setStyle(ButtonStyle.Secondary).setDisabled(game.board[0] !== '⬜'),
-                new ButtonBuilder().setCustomId(`ttt_1_${gameId}`).setLabel('2').setStyle(ButtonStyle.Secondary).setDisabled(game.board[1] !== '⬜'),
-                new ButtonBuilder().setCustomId(`ttt_2_${gameId}`).setLabel('3').setStyle(ButtonStyle.Secondary).setDisabled(game.board[2] !== '⬜')
-            );
-        const row2 = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder().setCustomId(`ttt_3_${gameId}`).setLabel('4').setStyle(ButtonStyle.Secondary).setDisabled(game.board[3] !== '⬜'),
-                new ButtonBuilder().setCustomId(`ttt_4_${gameId}`).setLabel('5').setStyle(ButtonStyle.Secondary).setDisabled(game.board[4] !== '⬜'),
-                new ButtonBuilder().setCustomId(`ttt_5_${gameId}`).setLabel('6').setStyle(ButtonStyle.Secondary).setDisabled(game.board[5] !== '⬜')
-            );
-        const row3 = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder().setCustomId(`ttt_6_${gameId}`).setLabel('7').setStyle(ButtonStyle.Secondary).setDisabled(game.board[6] !== '⬜'),
-                new ButtonBuilder().setCustomId(`ttt_7_${gameId}`).setLabel('8').setStyle(ButtonStyle.Secondary).setDisabled(game.board[7] !== '⬜'),
-                new ButtonBuilder().setCustomId(`ttt_8_${gameId}`).setLabel('9').setStyle(ButtonStyle.Secondary).setDisabled(game.board[8] !== '⬜')
-            );
-
-        return i.update({
-            content: `Kolko i Krzyzyk PvP!\n<@${game.player1}> (⭕) vs <@${game.player2}> (❌)\nRuch: <@${game.turn}> (${nextSymbol})\n\`\`\`\n${boardStr}\n\`\`\``,
-            components: [row, row2, row3]
-        });
+        // QUIZ
+        if (action === 'quiz') {
+            const [result] = rest;
+            return i.reply(result === 'correct' ? '✅ Poprawna odpowiedź!' : '❌ Zła odpowiedź!');
+        }
     }
 
 });
