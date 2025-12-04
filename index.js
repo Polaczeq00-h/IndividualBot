@@ -8,9 +8,11 @@ import {
     REST, 
     Routes, 
     ChannelType, 
-    Partials 
+    Partials,
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder
 } from 'discord.js';
-import { Chess } from 'chess.js';
 
 // ------------------- KLIENT -------------------
 
@@ -142,23 +144,17 @@ const commands = [
 
     new SlashCommandBuilder().setName('komendy').setDescription('Wyświetla listę komend').setDMPermission(true),
 
-    // SZACHY
-    new SlashCommandBuilder().setName('szachy').setDescription('Rozpoczyna grę w szachy').setDMPermission(true),
-
+    // KOLKO I KRZYZYK PVP
     new SlashCommandBuilder()
-        .setName('ruch')
-        .setDescription('Wykonuje ruch w szachach')
-        .addStringOption(o => 
-            o.setName('ruch')
-            .setDescription('np. e2e4')
-            .setRequired(true)
-        )
+        .setName('kolkokrzyzyk')
+        .setDescription('Gra w kolko i krzyzyk PvP')
+        .addUserOption(o => o.setName('przeciwnik').setDescription('Gracz do zagrania').setRequired(true))
         .setDMPermission(true),
 ].map(c => c.toJSON());
 
 // ------------------- REJESTR KOMEND -------------------
 
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
     try {
@@ -174,89 +170,206 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 // ------------------- LOGIKA KOMEND -------------------
 
+// Gry aktywne
+const tictacGames = new Map();
+
 client.on('interactionCreate', async i => {
-    if (!i.isChatInputCommand()) return;
+    // Obsługa slash komend
+    if (i.isChatInputCommand()) {
+        const name = i.commandName;
+        const user = i.options?.getUser('kto');
+        const targetUser = user || i.user;
+        const randomFrom = arr => arr[Math.floor(Math.random() * arr.length)];
+        const latency = Date.now() - i.createdTimestamp;
 
-    const name = i.commandName;
-    const user = i.options?.getUser('kto');
-    const targetUser = user || i.user;
-    const randomFrom = arr => arr[Math.floor(Math.random() * arr.length)];
-    const latency = Date.now() - i.createdTimestamp;
+        if (name === 'kolkokrzyzyk') {
+            const opponent = i.options.getUser('przeciwnik');
+            
+            if (opponent.id === i.user.id) {
+                return i.reply('Nie możesz grać sam ze sobą, głupcze!');
+            }
 
-    // ---- SZACHY ----
-    if (name === 'szachy') {
-        if (!client.games) client.games = {};
-        client.games[i.channelId] = new Chess();
+            const gameId = `${i.channelId}-${Date.now()}`;
+            
+            const board = Array(9).fill('⬜');
+            tictacGames.set(gameId, {
+                board,
+                player1: i.user.id,
+                player1Name: i.user.username,
+                player2: opponent.id,
+                player2Name: opponent.username,
+                turn: i.user.id
+            });
 
-        return i.reply('Rozpoczynamy!\n```' + client.games[i.channelId].ascii() + '```');
-    }
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder().setCustomId(`ttt_0_${gameId}`).setLabel('1').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId(`ttt_1_${gameId}`).setLabel('2').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId(`ttt_2_${gameId}`).setLabel('3').setStyle(ButtonStyle.Secondary)
+                );
+            const row2 = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder().setCustomId(`ttt_3_${gameId}`).setLabel('4').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId(`ttt_4_${gameId}`).setLabel('5').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId(`ttt_5_${gameId}`).setLabel('6').setStyle(ButtonStyle.Secondary)
+                );
+            const row3 = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder().setCustomId(`ttt_6_${gameId}`).setLabel('7').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId(`ttt_7_${gameId}`).setLabel('8').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId(`ttt_8_${gameId}`).setLabel('9').setStyle(ButtonStyle.Secondary)
+                );
 
-    if (name === 'ruch') {
-        if (!client.games || !client.games[i.channelId])
-            return i.reply('Nie ma gry! Użyj /szachy.');
-
-        const game = client.games[i.channelId];
-        const move = i.options.getString('ruch');
-
-        const result = game.move(move, { sloppy: true });
-        if (!result) return i.reply('Niepoprawny ruch, kurwa.');
-
-        if (game.game_over()) {
-            const board = game.ascii();
-            delete client.games[i.channelId];
-            return i.reply('Koniec gry!\n```' + board + '```');
+            return i.reply({
+                content: `Kolko i Krzyzyk PvP!\n<@${i.user.id}> (⭕) vs <@${opponent.id}> (❌)\nRuch: <@${i.user.id}>\n\`\`\`\n⬜⬜⬜\n⬜⬜⬜\n⬜⬜⬜\n\`\`\``,
+                components: [row, row2, row3]
+            });
         }
 
-        const moves = game.moves();
-        const aiMove = moves[Math.floor(Math.random() * moves.length)];
-        game.move(aiMove);
+        if (name === 'co') return i.reply(`Gówno\nPing: ${latency}ms`);
 
-        if (game.game_over()) {
-            const board = game.ascii();
-            delete client.games[i.channelId];
-            return i.reply(`AI: ${aiMove}\nKoniec gry!\n\`\`\`${board}\`\`\``);
+        if (name === 'komendy') {
+            let list = commands.map(c => `/${c.name} – ${c.description}`).join('\n');
+            return i.reply('Lista komend:\n' + list);
         }
 
-        return i.reply(`AI: ${aiMove}\n\`\`\`${game.ascii()}\`\`\``);
+        if (name === 'porno') {
+            const teksty = [
+                `<@${i.user.id}> masz swoje PORNO: https://tinyurl.com/freeporn983724623764`,
+                `<@${i.user.id}> ty zboczeńcu`,
+                `<@${i.user.id}> idź se sam poszukaj`,
+                `Nie dostaniesz PORNO, <@${i.user.id}>`,
+            ];
+            return i.reply(randomFrom(teksty));
+        }
+
+        if (name === 'wyruchaj') {
+            return i.reply(`<@${i.user.id}> losowo wyruchał ${targetUser}!`);
+        }
+
+        if (name === 'morda') {
+            const teksty = [
+                `${targetUser} wygląda jak patch notes pisany w Paintcie`,
+                `${targetUser} to chodzący błąd 404`,
+                `${targetUser} pachnie jak przypalony pendrive`
+            ];
+            return i.reply(randomFrom(teksty));
+        }
+
+        if (name === 'zabierz') {
+            return i.reply(`<@${i.user.id}> zabrał godność ${targetUser}`);
+        }
+        
+        // Pozostałe komendy
+        if (name === 'morda') {
+            const teksty = [
+                `${targetUser} wygląda jak patch notesy po pijaku`,
+                `${targetUser}, twoja twarz to błąd 404`,
+                `${targetUser} śmierdzi jak spalony kabel`
+            ];
+            return i.reply(randomFrom(teksty));
+        }
     }
 
-    // ---- KOMENDY BOTOWE ----
+    // Obsługa przycisków
+    if (i.isButton()) {
+        const [action, index, gameId] = i.customId.split('_');
+        
+        if (action !== 'ttt') return;
 
-    if (name === 'co') return i.reply(`Gówno\nPing: ${latency}ms`);
+        const game = tictacGames.get(gameId);
+        if (!game) return i.reply({ content: 'Gra wygasła!', ephemeral: true });
 
-    if (name === 'komendy') {
-        let list = commands.map(c => `/${c.name} – ${c.description}`).join('\n');
-        return i.reply('Lista komend:\n' + list);
+        // Sprawdzenie czyjej kolei
+        if (game.turn !== i.user.id) {
+            return i.reply({ content: 'Nie Twoja kolej!', ephemeral: true });
+        }
+
+        const idx = parseInt(index);
+        if (game.board[idx] !== '⬜') {
+            return i.reply({ content: 'Pole zajęte!', ephemeral: true });
+        }
+
+        // Ruch gracza
+        const symbol = game.turn === game.player1 ? '⭕' : '❌';
+        game.board[idx] = symbol;
+
+        // Sprawdzenie wygranej
+        const checkWin = (board) => {
+            const lines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // wiersze
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // kolumny
+                [0, 4, 8], [2, 4, 6] // przekątne
+            ];
+            
+            for (let line of lines) {
+                if (board[line[0]] !== '⬜' &&
+                    board[line[0]] === board[line[1]] &&
+                    board[line[1]] === board[line[2]]) {
+                    return board[line[0]];
+                }
+            }
+            return null;
+        };
+
+        const winner = checkWin(game.board);
+        const isBoardFull = !game.board.includes('⬜');
+
+        if (winner) {
+            tictacGames.delete(gameId);
+            const winnerName = winner === '⭕' ? game.player1Name : game.player2Name;
+            const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
+            
+            return i.update({
+                content: `🎉 **${winnerName}** wygrał!\n\`\`\`\n${boardStr}\n\`\`\``,
+                components: []
+            });
+        }
+
+        if (isBoardFull) {
+            tictacGames.delete(gameId);
+            const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
+            
+            return i.update({
+                content: `🤝 Remis!\n\`\`\`\n${boardStr}\n\`\`\``,
+                components: []
+            });
+        }
+
+        // Zmiana tury
+        game.turn = game.turn === game.player1 ? game.player2 : game.player1;
+
+        const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
+        const nextPlayer = game.turn === game.player1 ? game.player1Name : game.player2Name;
+        const nextSymbol = game.turn === game.player1 ? '⭕' : '❌';
+
+        const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder().setCustomId(`ttt_0_${gameId}`).setLabel('1').setStyle(ButtonStyle.Secondary).setDisabled(game.board[0] !== '⬜'),
+                new ButtonBuilder().setCustomId(`ttt_1_${gameId}`).setLabel('2').setStyle(ButtonStyle.Secondary).setDisabled(game.board[1] !== '⬜'),
+                new ButtonBuilder().setCustomId(`ttt_2_${gameId}`).setLabel('3').setStyle(ButtonStyle.Secondary).setDisabled(game.board[2] !== '⬜')
+            );
+        const row2 = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder().setCustomId(`ttt_3_${gameId}`).setLabel('4').setStyle(ButtonStyle.Secondary).setDisabled(game.board[3] !== '⬜'),
+                new ButtonBuilder().setCustomId(`ttt_4_${gameId}`).setLabel('5').setStyle(ButtonStyle.Secondary).setDisabled(game.board[4] !== '⬜'),
+                new ButtonBuilder().setCustomId(`ttt_5_${gameId}`).setLabel('6').setStyle(ButtonStyle.Secondary).setDisabled(game.board[5] !== '⬜')
+            );
+        const row3 = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder().setCustomId(`ttt_6_${gameId}`).setLabel('7').setStyle(ButtonStyle.Secondary).setDisabled(game.board[6] !== '⬜'),
+                new ButtonBuilder().setCustomId(`ttt_7_${gameId}`).setLabel('8').setStyle(ButtonStyle.Secondary).setDisabled(game.board[7] !== '⬜'),
+                new ButtonBuilder().setCustomId(`ttt_8_${gameId}`).setLabel('9').setStyle(ButtonStyle.Secondary).setDisabled(game.board[8] !== '⬜')
+            );
+
+        return i.update({
+            content: `Kolko i Krzyzyk PvP!\n<@${game.player1}> (⭕) vs <@${game.player2}> (❌)\nRuch: <@${game.turn}> (${nextSymbol})\n\`\`\`\n${boardStr}\n\`\`\``,
+            components: [row, row2, row3]
+        });
     }
 
-    if (name === 'porno') {
-        const teksty = [
-            `<@${i.user.id}> masz swoje PORNO: https://tinyurl.com/freeporn983724623764`,
-            `<@${i.user.id}> ty zboczeńcu`,
-            `<@${i.user.id}> idź se sam poszukaj`,
-            `Nie dostaniesz PORNO, <@${i.user.id}>`,
-        ];
-        return i.reply(randomFrom(teksty));
-    }
-
-    if (name === 'wyruchaj') {
-        return i.reply(`<@${i.user.id}> losowo wyruchał ${targetUser}!`);
-    }
-
-    if (name === 'morda') {
-        const teksty = [
-            `${targetUser} wygląda jak patch notes pisany w Paintcie`,
-            `${targetUser} to chodzący błąd 404`,
-            `${targetUser} pachnie jak przypalony pendrive`
-        ];
-        return i.reply(randomFrom(teksty));
-    }
-
-    if (name === 'zabierz') {
-        return i.reply(`<@${i.user.id}> zabrał godność ${targetUser}`);
-    }
 });
 
 // ------------------- LOGOWANIE -------------------
 
-client.login(process.env.TOKEN);
+client.login(process.env.DISCORD_TOKEN);
