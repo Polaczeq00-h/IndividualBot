@@ -32,7 +32,7 @@ client.once('clientReady', async (c) => {
 
     const channel = client.channels.cache.get('1445878372478484540');
     if (!channel) {
-        console.log('Nie znalazłem kanału, pajacu.');
+        console.log('Nie znalazłem kanału, kurwa.');
         return;
     }
 
@@ -61,20 +61,20 @@ client.once('clientReady', async (c) => {
             lastCommitId = JSON.parse(fs.readFileSync('./lastCommit.json', 'utf-8')).id;
         } catch {}
 
-        if (lastCommitId !== commit.sha) {
+            if (lastCommitId !== commit.sha) {
             await channel.send(
-                `Nowy commit! @everyone\n` +
-                `Ostatni commit:\n**${commitTitle}**\n${commitLink}\n` +
-                `*Autor: ${commitAuthor}*\n*Data: ${new Date(commitDate).toLocaleString()}*`
+                `Nowy commit, kurwa! @everyone\n` +
+                `**${commitTitle}**\n${commitLink}\n` +
+                `Autor: ${commitAuthor} — ${new Date(commitDate).toLocaleString()}`
             );
 
             fs.writeFileSync('./lastCommit.json', JSON.stringify({ id: commit.sha }));
-            console.log(`Wysłano commit: ${commitTitle}`);
+            console.log(`Wysłano commit kurwa: ${commitTitle}`);
         } else {
-            console.log('Brak nowych commitów.');
+            console.log('Brak nowych commitów kurwa.');
         }
     } catch (err) {
-        console.error('❌ Błąd pobierania commita:', err.message);
+        console.error('❌ Błąd pobierania commita zjebie:', err.message);
     }
 });
 
@@ -126,7 +126,7 @@ const commands = [
         .setDMPermission(true),
 
     new SlashCommandBuilder().setName('rozkurw').setDescription('Rozkurwia sytuację').setDMPermission(true),
-    new SlashCommandBuilder().setName('impreza').setDescription('Opis imprezy').setDMPermission(true),
+    new SlashCommandBuilder().setName('impreza').setDescription('Rozpoczyna imprezę kurwa').setDMPermission(true),
 
     new SlashCommandBuilder()
         .setName('torcik')
@@ -266,7 +266,7 @@ client.on('interactionCreate', async i => {
             const opponent = i.options.getUser('przeciwnik');
             
             if (opponent.id === i.user.id) {
-                return i.reply('Nie możesz grać sam ze sobą, głupcze!');
+                return i.reply('Nie możesz grać sam ze sobą, skurwysynu!');
             }
 
             const gameId = `${i.channelId}-${Date.now()}`;
@@ -301,7 +301,7 @@ client.on('interactionCreate', async i => {
                 );
 
             return i.reply({
-                content: `Kolko i Krzyzyk PvP!\n<@${i.user.id}> (⭕) vs <@${opponent.id}> (❌)\nRuch: <@${i.user.id}>\n\`\`\`\n⬜⬜⬜\n⬜⬜⬜\n⬜⬜⬜\n\`\`\``,
+                content: `Kółko i krzyżyk — jebana walka!\n<@${i.user.id}> (⭕) vs <@${opponent.id}> (❌)\nRuch: <@${i.user.id}>\n\`\`\`\n⬜⬜⬜\n⬜⬜⬜\n⬜⬜⬜\n\`\`\``,
                 components: [row, row2, row3]
             });
         }
@@ -328,7 +328,7 @@ client.on('interactionCreate', async i => {
         }
 
         if (name === 'wyruchaj') {
-            return i.reply(`<@${i.user.id}> bez litości wyruchał ${targetUser}!`);
+            return i.reply(`<@${i.user.id}> bez litości wyruchał ${targetUser}, kurwa!`);
         }
 
         if (name === 'morda') {
@@ -348,11 +348,11 @@ client.on('interactionCreate', async i => {
         }
 
         if (name === 'zajeb') {
-            return i.reply(`${targetUser} dostał solidny wpierdol od <@${i.user.id}>!`);
+            return i.reply(`${targetUser} dostał solidny wpierdol od <@${i.user.id}>, kurwa!`);
         }
 
         if (name === 'wkurw') {
-            return i.reply(`${targetUser} jest wkurwiony przez <@${i.user.id}>!`);
+            return i.reply(`${targetUser} jest wkurwiony przez <@${i.user.id}>, spadaj!`);
         }
 
         if (name === 'los') {
@@ -392,12 +392,12 @@ client.on('interactionCreate', async i => {
         }
 
         if (name === 'torcik') {
-            return i.reply(`🎂 <@${i.user.id}> dorzuca torcik ${targetUser}, smacznego kurwa!`);
+            return i.reply(`🎂 <@${i.user.id}> dorzuca torcik ${targetUser}, zajadaj, kurwa!`);
         }
 
         if (name === 'reset') {
             console.log(`🔄 Reset bota przez ${i.user.username}`);
-            await i.reply('Reset pomyślny');
+            await i.reply('Reset jebany wykonany, wracaj do roboty!');
             process.exit(0);
         }
 
@@ -428,7 +428,7 @@ client.on('interactionCreate', async i => {
                 );
 
             return i.reply({
-                content: `<@${i.user.id}> vs Bot\nBot wybrał: **${botChoice}**\nWybierz swoją opcję:`,
+                content: `<@${i.user.id}> vs Bot\nBot wybrał: **${botChoice}** — pokaż co masz, kurwa:\n`,
                 components: [row]
             });
         }
@@ -549,7 +549,7 @@ client.on('interactionCreate', async i => {
                 try {
                     const ch = await client.channels.fetch(sent.channelId);
                     const msg = await ch.messages.fetch(sent.id);
-                    await msg.edit({ content: `⌛ Gra wygasła! Słowo: **${game.word}**`, components: [] });
+                    await msg.edit({ content: `⌛ Gra jebana wygasła! Słowo: **${game.word}**`, components: [] });
                 } catch (e) {}
             }, TIMEOUT_MS);
 
@@ -580,7 +580,7 @@ client.on('interactionCreate', async i => {
             const row = new ActionRowBuilder().addComponents(buttons);
             
             return i.reply({
-                content: `❓ **${quiz.q}**`,
+                content: `❓ **${quiz.q}** — odpowiedz, kurwa:`,
                 components: [row]
             });
         }
@@ -599,7 +599,7 @@ client.on('interactionCreate', async i => {
                 'Los mówi: spierdół' 
             ];
             const wynik = odpowiedzi[Math.floor(Math.random() * odpowiedzi.length)];
-            return i.reply(`🎱 Kulka 8 odpowiada:\n**${wynik}**`);
+            return i.reply(`🎱 Kulka 8 pierdoli:\n**${wynik}**`);
         }
 
         if (name === 'szansa') {
@@ -623,16 +623,16 @@ client.on('interactionCreate', async i => {
             const [index, gameId] = rest;
             
             const game = tictacGames.get(gameId);
-            if (!game) return i.reply({ content: 'Gra wygasła!', ephemeral: true });
+            if (!game) return i.reply({ content: 'Gra wygasła, spierdalaj!', ephemeral: true });
 
             // Sprawdzenie czyjej kolei
             if (game.turn !== i.user.id) {
-                return i.reply({ content: 'Nie Twoja kolej!', ephemeral: true });
+                return i.reply({ content: 'Nie Twoja kolej, spierdalaj!', ephemeral: true });
             }
 
             const idx = parseInt(index);
             if (game.board[idx] !== '⬜') {
-                return i.reply({ content: 'Pole zajęte!', ephemeral: true });
+                return i.reply({ content: 'Pole zajęte, nie kombinuj!', ephemeral: true });
             }
 
             // Ruch gracza
@@ -666,7 +666,7 @@ client.on('interactionCreate', async i => {
                 const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
                 
                 return i.update({
-                    content: `🎉 **${winnerName}** wygrał!\n\`\`\`\n${boardStr}\n\`\`\``,
+                    content: `🎉 **${winnerName}** rozjebał grę i wygrał!\n\`\`\`\n${boardStr}\n\`\`\``,
                     components: []
                 });
             }
@@ -676,7 +676,7 @@ client.on('interactionCreate', async i => {
                 const boardStr = `${game.board[0]}${game.board[1]}${game.board[2]}\n${game.board[3]}${game.board[4]}${game.board[5]}\n${game.board[6]}${game.board[7]}${game.board[8]}`;
                 
                 return i.update({
-                    content: `🤝 Remis!\n\`\`\`\n${boardStr}\n\`\`\``,
+                    content: `🤝 Kurwa, remis!\n\`\`\`\n${boardStr}\n\`\`\``,
                     components: []
                 });
             }
@@ -708,7 +708,7 @@ client.on('interactionCreate', async i => {
                 );
 
             return i.update({
-                content: `Kolko i Krzyzyk PvP!\n<@${game.player1}> (⭕) vs <@${game.player2}> (❌)\nRuch: <@${game.turn}> (${nextSymbol})\n\`\`\`\n${boardStr}\n\`\`\``,
+                content: `Kółko i krzyżyk — jebana walka!\n<@${game.player1}> (⭕) vs <@${game.player2}> (❌)\nRuch: <@${game.turn}> (${nextSymbol})\n\`\`\`\n${boardStr}\n\`\`\``,
                 components: [row, row2, row3]
             });
         }
@@ -718,7 +718,7 @@ client.on('interactionCreate', async i => {
             const [choice, userId] = rest;
             
             if (i.user.id !== userId) {
-                return i.reply({ content: 'To nie Twoja gra!', ephemeral: true });
+                return i.reply({ content: 'To nie Twoja gra, spierdalaj!', ephemeral: true });
             }
 
             const choices = { papier: '📄', kamien: '🪨', nozyce: '✂️' };
@@ -726,9 +726,9 @@ client.on('interactionCreate', async i => {
             const botChoice = botChoices[Math.floor(Math.random() * botChoices.length)];
 
             const results = {
-                papier: { kamien: 'Papier zakrywa Kamień! 🎉 WYGRAŁEŚ!', nozyce: 'Nożyce tną Papier! ❌ PRZEGRAŁEŚ!', papier: 'Remis! 🤝' },
-                kamien: { nozyce: 'Kamień tępe Nożyce! 🎉 WYGRAŁEŚ!', papier: 'Papier zakrywa Kamień! ❌ PRZEGRAŁEŚ!', kamien: 'Remis! 🤝' },
-                nozyce: { papier: 'Nożyce tną Papier! 🎉 WYGRAŁEŚ!', kamien: 'Kamień tępe Nożyce! ❌ PRZEGRAŁEŚ!', nozyce: 'Remis! 🤝' }
+                papier: { kamien: 'Papier zakrywa Kamień! 🎉 WYGRAŁEŚ, kurwa!', nozyce: 'Nożyce tną Papier! ❌ PRZEGRAŁEŚ, spierdalaj!', papier: 'Remis, kurwa! 🤝' },
+                kamien: { nozyce: 'Kamień tępe Nożyce! 🎉 WYGRAŁEŚ, kurwa!', papier: 'Papier zakrywa Kamień! ❌ PRZEGRAŁEŚ, spierdalaj!', kamien: 'Remis, kurwa! 🤝' },
+                nozyce: { papier: 'Nożyce tną Papier! 🎉 WYGRAŁEŚ, kurwa!', kamien: 'Kamień tępe Nożyce! ❌ PRZEGRAŁEŚ, spierdalaj!', nozyce: 'Remis, kurwa! 🤝' }
             };
 
             return i.reply(`${choices[choice]} vs ${choices[botChoice]}\n${results[choice][botChoice]}`);
@@ -737,7 +737,7 @@ client.on('interactionCreate', async i => {
         // QUIZ
         if (action === 'quiz') {
             const [result] = rest;
-            return i.reply(result === 'correct' ? '✅ Poprawna odpowiedź!' : '❌ Zła odpowiedź!');
+            return i.reply(result === 'correct' ? '✅ Poprawna odpowiedź, kurwa!' : '❌ Zła odpowiedź, spadaj!');
         }
 
         // HANGMAN / WISIELEC (obsługa zgadywania i nawigacji stron)
@@ -755,8 +755,8 @@ client.on('interactionCreate', async i => {
                 const ownerId = part4;
 
                 const game = tictacGames.get(gameId);
-                if (!game) return i.reply({ content: 'Gra wygasła!', ephemeral: true });
-                if (i.user.id !== ownerId) return i.reply({ content: 'To nie Twoja gra!', ephemeral: true });
+                if (!game) return i.reply({ content: 'Gra wygasła, spierdalaj!', ephemeral: true });
+                if (i.user.id !== ownerId) return i.reply({ content: 'To nie Twoja gra, spierdalaj!', ephemeral: true });
 
                 game.page = dir === 'next' ? 1 : 0;
 
@@ -803,11 +803,11 @@ client.on('interactionCreate', async i => {
             const ownerId = part3;
 
             const game = tictacGames.get(gameId);
-            if (!game) return i.reply({ content: 'Gra wygasła!', ephemeral: true });
-            if (i.user.id !== ownerId) return i.reply({ content: 'To nie Twoja gra!', ephemeral: true });
+            if (!game) return i.reply({ content: 'Gra wygasła, spierdalaj!', ephemeral: true });
+            if (i.user.id !== ownerId) return i.reply({ content: 'To nie Twoja gra, spierdalaj!', ephemeral: true });
 
             const L = letter.toUpperCase();
-            if (game.guessed.includes(L)) return i.reply({ content: 'Już zgadłeś tę literę!', ephemeral: true });
+            if (game.guessed.includes(L)) return i.reply({ content: 'Już zgadłeś tę literę, kurwa!', ephemeral: true });
 
             if (game.word.includes(L)) {
                 game.guessed.push(L);
@@ -823,7 +823,7 @@ client.on('interactionCreate', async i => {
                 // clear timeout if set
                 if (game.timeoutId) clearTimeout(game.timeoutId);
                 tictacGames.delete(gameId);
-                return i.update({ content: `🎉 Wygrałeś! Słowo: **${game.word}**`, components: [] });
+                return i.update({ content: `🎉 Wygrałeś, szczęściarzu! Słowo: **${game.word}**`, components: [] });
             }
 
             // Sprawdzenie przegranej
@@ -840,7 +840,7 @@ client.on('interactionCreate', async i => {
                     `\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========`,
                     `\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========`
                 ];
-                return i.update({ content: `💀 Przegrałeś! Słowo: **${game.word}**\n\`\`\`\n${HANGMAN_PICS[6]}\n\`\`\``, components: [] });
+                return i.update({ content: `💀 Przegrałeś, kurwa! Słowo: **${game.word}**\n\`\`\`\n${HANGMAN_PICS[6]}\n\`\`\``, components: [] });
             }
 
             // Odtwórz aktualną stronę (0 lub 1)
@@ -867,7 +867,7 @@ client.on('interactionCreate', async i => {
             );
             rows.push(nav);
 
-            return i.update({ content: `🎮 Wisielec!\nSłowo: ${display}\nBłędy: ${game.wrong}/6`, components: rows });
+            return i.update({ content: `🎮 Wisielec! Trzymaj się, kurwa.\nSłowo: ${display}\nBłędy: ${game.wrong}/6`, components: rows });
         }
     }
 
