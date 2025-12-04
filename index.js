@@ -200,6 +200,60 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 const tictacGames = new Map();
 
 client.on('interactionCreate', async i => {
+    // Jednorazowe 'monkey-patch' metod wysyłających odpowiedzi, żeby automatycznie
+    // doprawiać treści (zwulgaryzować). Patch jest bezinwazyjny - modyfikuje tylko
+    // przekazywany `content` jeśli to string lub pole `content` w obiekcie.
+    if (!global.__vulgPatched) {
+        try {
+            const proto = Object.getPrototypeOf(i);
+
+            const vulgarize = (text) => {
+                try {
+                    if (!text || typeof text !== 'string') return text;
+                    if (text.toLowerCase().includes('kurwa')) return text; // już jest wulgarnie
+
+                    // Prosty mechanizm: jeśli tekst ma wiele linii, dodajemy 'kurwa' na końcu pierwszej
+                    // i dokładamy ' kurwa!' na końcu całego tekstu. Zachowujemy istniejące emoji/znaki.
+                    let t = text.trim();
+                    // Jeśli kończy się znakiem interpunkcyjnym, wstaw przed nim ' kurwa'
+                    if (/[.!?]$/.test(t)) {
+                        t = t.replace(/([.!?])$/, ' kurwa$1');
+                    } else {
+                        t = t + ' kurwa!';
+                    }
+                    return t;
+                } catch (e) {
+                    return text;
+                }
+            };
+
+            const patchMethod = (name) => {
+                const orig = proto[name];
+                if (!orig || typeof orig !== 'function') return;
+                proto[name] = function () {
+                    try {
+                        const args = Array.from(arguments);
+                        if (args.length > 0) {
+                            const first = args[0];
+                            if (typeof first === 'string') {
+                                args[0] = vulgarize(first);
+                            } else if (first && typeof first === 'object' && typeof first.content === 'string') {
+                                args[0] = { ...first, content: vulgarize(first.content) };
+                            }
+                        }
+                        return orig.apply(this, args);
+                    } catch (e) {
+                        return orig.apply(this, arguments);
+                    }
+                };
+            };
+
+            ['reply', 'update', 'editReply'].forEach(patchMethod);
+        } catch (e) {
+            console.error('Nie udało się zaaplikować vulgarize patch:', e);
+        }
+        global.__vulgPatched = true;
+    }
     // Obsługa slash komend
     if (i.isChatInputCommand()) {
         const name = i.commandName;
@@ -252,35 +306,43 @@ client.on('interactionCreate', async i => {
             });
         }
 
-        if (name === 'co') return i.reply(`Gówno\nPing: ${latency}ms`);
+        if (name === 'co') return i.reply(`KURWA GÓWNO!\nPing: ${latency}ms`);
 
         if (name === 'komendy') {
             let list = commands.map(c => `/${c.name} – ${c.description}`).join('\n');
-            return i.reply('Lista komend:\n' + list);
+            return i.reply('Lista komend, kurwa:\n' + list);
         }
 
         if (name === 'porno') {
             const teksty = [
-                `<@${i.user.id}> masz swoje PORNO: https://tinyurl.com/freeporn983724623764`,
-                `<@${i.user.id}> ty zboczeńcu`,
-                `<@${i.user.id}> idź se sam poszukaj`,
-                `Nie dostaniesz PORNO, <@${i.user.id}>`,
+                `<@${i.user.id}> masz swoje PORNO, kurwa: https://tinyurl.com/freeporn983724623764`,
+                `<@${i.user.id}> ty zboczeńcu, idź szukać dalej`,
+                `<@${i.user.id}> sam se znajdź, leniu`,
+                `Nie dostaniesz PORNO, <@${i.user.id}>, spadaj!`,
+                `<@${i.user.id}> znalezisko nr2: https://tinyurl.com/oddporn123 — nie dziękuj`,
+                `<@${i.user.id}> przynieś sobie popcorn i idź bez mnie, kurwa`,
+                `<@${i.user.id}> twoja lista pornoli jest smutna, popracuj nad nią`,
+                `<@${i.user.id}> więcej porno? Serio? Oto link: https://tinyurl.com/anotherporn`,
             ];
             return i.reply(randomFrom(teksty));
         }
 
         if (name === 'wyruchaj') {
-            return i.reply(`<@${i.user.id}> losowo wyruchał ${targetUser}!`);
+            return i.reply(`<@${i.user.id}> bez litości wyruchał ${targetUser}!`);
         }
 
         if (name === 'morda') {
             const teksty = [
-                `${targetUser} wygląda jak patch notes pisany w Paintcie`,
-                `${targetUser} to chodzący błąd 404`,
-                `${targetUser} pachnie jak przypalony pendrive`,
-                `${targetUser} wygląda jak patch notesy po pijaku`,
-                `${targetUser}, twoja twarz to błąd 404`,
-                `${targetUser} śmierdzi jak spalony kabel`
+                `${targetUser} wygląda jak patch notes pisany w Paintcie, kurwa`,
+                `${targetUser} to chodzący błąd 404, jebany`,
+                `${targetUser} pachnie jak przypalony pendrive, spadaj`,
+                `${targetUser} wygląda jak patch notesy po pijaku, kurwa`,
+                `${targetUser}, twoja twarz to błąd 404, serio`,
+                `${targetUser} śmierdzi jak spalony kabel, brawo`
+            ,
+                `${targetUser} ma więcej bugów niż twoje życie`,
+                `${targetUser} to commit bez testów — katastrofa`,
+                `${targetUser} wyglądasz jakbyś debugował w okularach słonecznych`
             ];
             return i.reply(randomFrom(teksty));
         }
@@ -298,33 +360,39 @@ client.on('interactionCreate', async i => {
                 `<@${i.user.id}>, los cię dzisiaj kopie w dupę!`,
                 `<@${i.user.id}>, pech cię znajdzie!`,
                 `<@${i.user.id}>, los jest brutalny!`
+                ,`<@${i.user.id}>, dziś nie twój dzień, idź spać`,
+                `<@${i.user.id}>, coś pójdzie nie tak, przygotuj się`,
+                `<@${i.user.id}>, może jutro będzie lepiej, kurwa`
             ];
             return i.reply(randomFrom(teksty));
         }
 
         if (name === 'lisc') {
-            return i.reply(`<@${i.user.id}> wysłał liścia do ${targetUser}!`);
+            return i.reply(`<@${i.user.id}> spierdolił liścia ${targetUser}, kurwa!`);
         }
 
         if (name === 'love') {
             const teksty = [
-                `${targetUser || i.user} jesteś piękny jak stacktrace!`,
-                `${targetUser || i.user} świecisz jak monitor!`,
-                `${targetUser || i.user} jesteś moim słoneczkiem!`
+                `${targetUser || i.user} jesteś piękny jak jebany stacktrace!`,
+                `${targetUser || i.user} świecisz jak monitor, kurwa!`,
+                `${targetUser || i.user} jesteś moim słoneczkiem, pierdol się`,
+                `${targetUser || i.user}, twoje oczy błyszczą jak błędne logi`,
+                `${targetUser || i.user}, moje serce ma leak, tylko dla ciebie`,
+                `${targetUser || i.user}, jesteś jak bug, nie mogę cię usunąć`
             ];
             return i.reply(randomFrom(teksty));
         }
 
         if (name === 'rozkurw') {
-            return i.reply('Rozkurw wszędzie!');
+            return i.reply('Rozkurw jebany wszędzie!');
         }
 
         if (name === 'impreza') {
-            return i.reply('Impreza w toku!');
+            return i.reply('Impreza w toku, kurwa!');
         }
 
         if (name === 'torcik') {
-            return i.reply(`🎂 <@${i.user.id}> daje torcik do ${targetUser}!`);
+            return i.reply(`🎂 <@${i.user.id}> dorzuca torcik ${targetUser}, smacznego kurwa!`);
         }
 
         if (name === 'reset') {
@@ -336,7 +404,7 @@ client.on('interactionCreate', async i => {
         // GRY I ZABAWY
         if (name === 'rzutmoneta') {
             const wynik = Math.random() > 0.5 ? 'Orzeł 🦅' : 'Reszka 🪙';
-            return i.reply(`<@${i.user.id}> rzucił monetą...\n**${wynik}**`);
+            return i.reply(`<@${i.user.id}> rzucił monetą, kurwa...\n**${wynik}**`);
         }
 
         if (name === 'kostka') {
@@ -345,7 +413,7 @@ client.on('interactionCreate', async i => {
                 return i.reply('Kostka musi mieć 2-100 ścian!');
             }
             const wynik = Math.floor(Math.random() * sciany) + 1;
-            return i.reply(`🎲 <@${i.user.id}> rzucił kostką d${sciany}...\n**Wynik: ${wynik}**`);
+            return i.reply(`🎲 <@${i.user.id}> rzucił kostką d${sciany}, kurwa...\n**Wynik: ${wynik}**`);
         }
 
         if (name === 'papierokamiennozaniec') {
@@ -526,7 +594,9 @@ client.on('interactionCreate', async i => {
                 'Na pewno nie ❌',
                 'Zdecydowanie tak ✅',
                 'Nie wiem 🤔',
-                'Chwileczka... 🎱'
+                'Chwileczka... 🎱',
+                'Zapytaj ponownie po piwie 🍺',
+                'Los mówi: spierdół' 
             ];
             const wynik = odpowiedzi[Math.floor(Math.random() * odpowiedzi.length)];
             return i.reply(`🎱 Kulka 8 odpowiada:\n**${wynik}**`);
