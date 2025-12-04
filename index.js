@@ -63,7 +63,7 @@ client.once('clientReady', async (c) => {
 
         if (lastCommitId !== commit.sha) {
             await channel.send(
-                `Update działa, kurwa. @everyone\n` +
+                `Nowy commit! @everyone\n` +
                 `Ostatni commit:\n**${commitTitle}**\n${commitLink}\n` +
                 `*Autor: ${commitAuthor}*\n*Data: ${new Date(commitDate).toLocaleString()}*`
             );
@@ -169,7 +169,7 @@ const commands = [
 
     new SlashCommandBuilder().setName('quiz').setDescription('Quiz z pytaniami').setDMPermission(true),
 
-    new SlashCommandBuilder().setName('8kul').setDescription('Magic 8-ball - pytaj i losuj odpowiedź').setDMPermission(true),
+    new SlashCommandBuilder().setName('8kul').setDescription('Kulka 8 - zadaj pytanie i losuj odpowiedź').setDMPermission(true),
 
     new SlashCommandBuilder()
         .setName('szansa')
@@ -430,7 +430,7 @@ client.on('interactionCreate', async i => {
 =========`
             ];
 
-            const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes timeout
+            const TIMEOUT_MS = 5 * 60 * 1000; // timeout: 5 minut
 
             tictacGames.set(gameId, {
                 word: slowo,
@@ -529,7 +529,7 @@ client.on('interactionCreate', async i => {
                 'Chwileczka... 🎱'
             ];
             const wynik = odpowiedzi[Math.floor(Math.random() * odpowiedzi.length)];
-            return i.reply(`🎱 Magic 8-ball odpowiada:\n**${wynik}**`);
+            return i.reply(`🎱 Kulka 8 odpowiada:\n**${wynik}**`);
         }
 
         if (name === 'szansa') {
