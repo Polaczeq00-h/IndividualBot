@@ -150,6 +150,9 @@ const commands = [
         .setDescription('Gra w kolko i krzyzyk PvP')
         .addUserOption(o => o.setName('przeciwnik').setDescription('Gracz do zagrania').setRequired(true))
         .setDMPermission(true),
+
+    // RESET
+    new SlashCommandBuilder().setName('reset').setDescription('Resetuje bota').setDMPermission(true),
 ].map(c => c.toJSON());
 
 // ------------------- REJESTR KOMEND -------------------
@@ -258,6 +261,12 @@ client.on('interactionCreate', async i => {
 
         if (name === 'zabierz') {
             return i.reply(`<@${i.user.id}> zabrał godność ${targetUser}`);
+        }
+        
+        if (name === 'reset') {
+            console.log(`🔄 Reset bota przez ${i.user.username}`);
+            await i.reply('Reset pomyślny');
+            process.exit(0);
         }
         
         // Pozostałe komendy
