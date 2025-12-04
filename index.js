@@ -366,7 +366,7 @@ client.on('interactionCreate', async i => {
         }
 
         if (name === 'wisielec') {
-            const slowa = ['JAVASCRIPT', 'DISCORD', 'NODEJS', 'JAVASCRIPT', 'GITHUB', 'TELEGRAM', 'PYTHON'];
+            const slowa = ['JAVASCRIPT', 'DISCORD', 'NODEJS', 'GITHUB', 'TELEGRAM', 'PYTHON'];
             const slowo = slowa[Math.floor(Math.random() * slowa.length)];
             const gameId = `hangman_${i.user.id}_${Date.now()}`;
             
@@ -374,11 +374,33 @@ client.on('interactionCreate', async i => {
                 word: slowo,
                 guessed: [],
                 wrong: 0,
-                type: 'hangman'
+                type: 'hangman',
+                owner: i.user.id
             });
 
             const display = slowo.split('').map(c => tictacGames.get(gameId).guessed.includes(c) ? c : '_').join(' ');
-            return i.reply(`🎮 Wisielec!\nSłowo: ${display}\nBłędy: 0/6`);
+
+            // Przyciski A-Z (po 5 przycisków w wierszu, 6 wierszy)
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            const rows = [];
+            for (let r = 0; r < Math.ceil(letters.length / 5); r++) {
+                const row = new ActionRowBuilder();
+                const slice = letters.slice(r * 5, r * 5 + 5);
+                slice.forEach(l => {
+                    row.addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(`hangman_${l}_${gameId}_${i.user.id}`)
+                            .setLabel(l)
+                            .setStyle(ButtonStyle.Secondary)
+                    );
+                });
+                rows.push(row);
+            }
+
+            return i.reply({
+                content: `🎮 Wisielec!\nSłowo: ${display}\nBłędy: 0/6`,
+                components: rows
+            });
         }
 
         if (name === 'quiz') {
@@ -555,6 +577,64 @@ client.on('interactionCreate', async i => {
         if (action === 'quiz') {
             const [result] = rest;
             return i.reply(result === 'correct' ? '✅ Poprawna odpowiedź!' : '❌ Zła odpowiedź!');
+        }
+
+        // HANGMAN / WISIELEC
+        if (action === 'hangman') {
+            const [letter, gameId, ownerId] = rest;
+
+            const game = tictacGames.get(gameId);
+            if (!game) return i.reply({ content: 'Gra wygasła!', ephemeral: true });
+
+            if (i.user.id !== ownerId) {
+                return i.reply({ content: 'To nie Twoja gra!', ephemeral: true });
+            }
+
+            const L = letter.toUpperCase();
+            if (game.guessed.includes(L)) {
+                return i.reply({ content: 'Już zgadłeś tę literę!', ephemeral: true });
+            }
+
+            if (game.word.includes(L)) {
+                game.guessed.push(L);
+            } else {
+                game.wrong = (game.wrong || 0) + 1;
+            }
+
+            const display = game.word.split('').map(c => game.guessed.includes(c) ? c : '_').join(' ');
+
+            // Sprawdzenie wygranej
+            const allGuessed = game.word.split('').every(c => game.guessed.includes(c));
+            if (allGuessed) {
+                tictacGames.delete(gameId);
+                return i.update({ content: `🎉 Wygrałeś! Słowo: **${game.word}**`, components: [] });
+            }
+
+            // Sprawdzenie przegranej
+            if (game.wrong >= 6) {
+                tictacGames.delete(gameId);
+                return i.update({ content: `💀 Przegrałeś! Słowo: **${game.word}**`, components: [] });
+            }
+
+            // Odtwórz przyciski, wyłączając już kliknięte litery
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            const rows = [];
+            for (let r = 0; r < Math.ceil(letters.length / 5); r++) {
+                const row = new ActionRowBuilder();
+                const slice = letters.slice(r * 5, r * 5 + 5);
+                slice.forEach(l => {
+                    row.addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(`hangman_${l}_${gameId}_${ownerId}`)
+                            .setLabel(l)
+                            .setStyle(game.guessed.includes(l) ? ButtonStyle.Success : ButtonStyle.Secondary)
+                            .setDisabled(game.guessed.includes(l) || game.wrong >= 6)
+                    );
+                });
+                rows.push(row);
+            }
+
+            return i.update({ content: `🎮 Wisielec!\nSłowo: ${display}\nBłędy: ${game.wrong}/6`, components: rows });
         }
     }
 
