@@ -369,7 +369,69 @@ client.on('interactionCreate', async i => {
             const slowa = ['JAVASCRIPT', 'DISCORD', 'NODEJS', 'GITHUB', 'TELEGRAM', 'PYTHON'];
             const slowo = slowa[Math.floor(Math.random() * slowa.length)];
             const gameId = `hangman_${i.user.id}_${Date.now()}`;
-            
+
+            // ASCII rysunki wisielca (0..6)
+            const HANGMAN_PICS = [
+                `
+  +---+
+  |   |
+      |
+      |
+      |
+      |
+=========`,
+                `
+  +---+
+  |   |
+  O   |
+      |
+      |
+      |
+=========`,
+                `
+  +---+
+  |   |
+  O   |
+  |   |
+      |
+      |
+=========`,
+                `
+  +---+
+  |   |
+  O   |
+ /|   |
+      |
+      |
+=========`,
+                `
+  +---+
+  |   |
+  O   |
+ /|\  |
+      |
+      |
+=========`,
+                `
+  +---+
+  |   |
+  O   |
+ /|\  |
+ /    |
+      |
+=========`,
+                `
+  +---+
+  |   |
+  O   |
+ /|\  |
+ / \  |
+      |
+=========`
+            ];
+
+            const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes timeout
+
             tictacGames.set(gameId, {
                 word: slowo,
                 guessed: [],
@@ -381,11 +443,10 @@ client.on('interactionCreate', async i => {
 
             const display = slowo.split('').map(c => tictacGames.get(gameId).guessed.includes(c) ? c : '_').join(' ');
 
-            // Paginate letters: A-M (0) and N-Z (1) to respect Discord limits (max 25 buttons)
+            // Page 0: A-M
             const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-            const page0 = letters.slice(0, 13); // A-M (13 letters)
+            const page0 = letters.slice(0, 13);
             const rows = [];
-            // chunk into rows of max 5
             for (let r = 0; r < Math.ceil(page0.length / 5); r++) {
                 const row = new ActionRowBuilder();
                 const slice = page0.slice(r * 5, r * 5 + 5);
@@ -399,18 +460,38 @@ client.on('interactionCreate', async i => {
                 });
                 rows.push(row);
             }
-
-            // Dodaj wiersz nawigacji
             const nav = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId(`hangman_page_prev_${gameId}_${i.user.id}`).setLabel('◀️').setStyle(ButtonStyle.Secondary).setDisabled(true),
                 new ButtonBuilder().setCustomId(`hangman_page_next_${gameId}_${i.user.id}`).setLabel('▶️').setStyle(ButtonStyle.Primary)
             );
             rows.push(nav);
 
-            return i.reply({
-                content: `🎮 Wisielec!\nSłowo: ${display}\nBłędy: 0/6`,
-                components: rows
+            // Wyślij wiadomość i pobierz referencję, żeby móc ją edytować po timeout
+            const sent = await i.reply({
+                content: `🎮 Wisielec!\n\`\`\`\n${HANGMAN_PICS[0]}\n\`\`\`\nSłowo: ${display}\nBłędy: 0/6`,
+                components: rows,
+                fetchReply: true
             });
+
+            // ustaw timeout na wygaśnięcie gry
+            const timeoutId = setTimeout(async () => {
+                const game = tictacGames.get(gameId);
+                if (!game) return;
+                tictacGames.delete(gameId);
+                try {
+                    const ch = await client.channels.fetch(sent.channelId);
+                    const msg = await ch.messages.fetch(sent.id);
+                    await msg.edit({ content: `⌛ Gra wygasła! Słowo: **${game.word}**`, components: [] });
+                } catch (e) {}
+            }, TIMEOUT_MS);
+
+            // zapisz timeout id i message info
+            const g = tictacGames.get(gameId);
+            g.timeoutId = timeoutId;
+            g.channelId = sent.channelId;
+            g.messageId = sent.id;
+
+            return;
         }
 
         if (name === 'quiz') {
@@ -634,7 +715,16 @@ client.on('interactionCreate', async i => {
                 rows.push(nav);
 
                 const display = game.word.split('').map(c => game.guessed.includes(c) ? c : '_').join(' ');
-                return i.update({ content: `🎮 Wisielec!\nSłowo: ${display}\nBłędy: ${game.wrong}/6`, components: rows });
+                const HANGMAN_PICS = [
+                    `\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========`
+                ];
+                return i.update({ content: `🎮 Wisielec!\n\`\`\`\n${HANGMAN_PICS[game.wrong]}\n\`\`\`\nSłowo: ${display}\nBłędy: ${game.wrong}/6`, components: rows });
             }
 
             // Inaczej: zgadywanie litery
@@ -660,14 +750,27 @@ client.on('interactionCreate', async i => {
             // Sprawdzenie wygranej
             const allGuessed = game.word.split('').every(c => game.guessed.includes(c));
             if (allGuessed) {
+                // clear timeout if set
+                if (game.timeoutId) clearTimeout(game.timeoutId);
                 tictacGames.delete(gameId);
                 return i.update({ content: `🎉 Wygrałeś! Słowo: **${game.word}**`, components: [] });
             }
 
             // Sprawdzenie przegranej
             if (game.wrong >= 6) {
+                if (game.timeoutId) clearTimeout(game.timeoutId);
                 tictacGames.delete(gameId);
-                return i.update({ content: `💀 Przegrałeś! Słowo: **${game.word}**`, components: [] });
+                // include final hangman art if available
+                const HANGMAN_PICS = [
+                    `\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========`,
+                    `\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========`
+                ];
+                return i.update({ content: `💀 Przegrałeś! Słowo: **${game.word}**\n\`\`\`\n${HANGMAN_PICS[6]}\n\`\`\``, components: [] });
             }
 
             // Odtwórz aktualną stronę (0 lub 1)
