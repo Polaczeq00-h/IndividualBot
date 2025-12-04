@@ -200,60 +200,6 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 const tictacGames = new Map();
 
 client.on('interactionCreate', async i => {
-    // Jednorazowe 'monkey-patch' metod wysyłających odpowiedzi, żeby automatycznie
-    // doprawiać treści (zwulgaryzować). Patch jest bezinwazyjny - modyfikuje tylko
-    // przekazywany `content` jeśli to string lub pole `content` w obiekcie.
-    if (!global.__vulgPatched) {
-        try {
-            const proto = Object.getPrototypeOf(i);
-
-            const vulgarize = (text) => {
-                try {
-                    if (!text || typeof text !== 'string') return text;
-                    if (text.toLowerCase().includes('kurwa')) return text; // już jest wulgarnie
-
-                    // Prosty mechanizm: jeśli tekst ma wiele linii, dodajemy 'kurwa' na końcu pierwszej
-                    // i dokładamy ' kurwa!' na końcu całego tekstu. Zachowujemy istniejące emoji/znaki.
-                    let t = text.trim();
-                    // Jeśli kończy się znakiem interpunkcyjnym, wstaw przed nim ' kurwa'
-                    if (/[.!?]$/.test(t)) {
-                        t = t.replace(/([.!?])$/, ' kurwa$1');
-                    } else {
-                        t = t + ' kurwa!';
-                    }
-                    return t;
-                } catch (e) {
-                    return text;
-                }
-            };
-
-            const patchMethod = (name) => {
-                const orig = proto[name];
-                if (!orig || typeof orig !== 'function') return;
-                proto[name] = function () {
-                    try {
-                        const args = Array.from(arguments);
-                        if (args.length > 0) {
-                            const first = args[0];
-                            if (typeof first === 'string') {
-                                args[0] = vulgarize(first);
-                            } else if (first && typeof first === 'object' && typeof first.content === 'string') {
-                                args[0] = { ...first, content: vulgarize(first.content) };
-                            }
-                        }
-                        return orig.apply(this, args);
-                    } catch (e) {
-                        return orig.apply(this, arguments);
-                    }
-                };
-            };
-
-            ['reply', 'update', 'editReply'].forEach(patchMethod);
-        } catch (e) {
-            console.error('Nie udało się zaaplikować vulgarize patch:', e);
-        }
-        global.__vulgPatched = true;
-    }
     // Obsługa slash komend
     if (i.isChatInputCommand()) {
         const name = i.commandName;
