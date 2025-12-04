@@ -254,29 +254,60 @@ client.on('interactionCreate', async i => {
             const teksty = [
                 `${targetUser} wygląda jak patch notes pisany w Paintcie`,
                 `${targetUser} to chodzący błąd 404`,
-                `${targetUser} pachnie jak przypalony pendrive`
-            ];
-            return i.reply(randomFrom(teksty));
-        }
-
-        if (name === 'zabierz') {
-            return i.reply(`<@${i.user.id}> zabrał godność ${targetUser}`);
-        }
-        
-        if (name === 'reset') {
-            console.log(`🔄 Reset bota przez ${i.user.username}`);
-            await i.reply('Reset pomyślny');
-            process.exit(0);
-        }
-        
-        // Pozostałe komendy
-        if (name === 'morda') {
-            const teksty = [
+                `${targetUser} pachnie jak przypalony pendrive`,
                 `${targetUser} wygląda jak patch notesy po pijaku`,
                 `${targetUser}, twoja twarz to błąd 404`,
                 `${targetUser} śmierdzi jak spalony kabel`
             ];
             return i.reply(randomFrom(teksty));
+        }
+
+        if (name === 'zajeb') {
+            return i.reply(`${targetUser} dostał solidny wpierdol od <@${i.user.id}>!`);
+        }
+
+        if (name === 'wkurw') {
+            return i.reply(`${targetUser} jest wkurwiony przez <@${i.user.id}>!`);
+        }
+
+        if (name === 'los') {
+            const teksty = [
+                `<@${i.user.id}>, los cię dzisiaj kopie w dupę!`,
+                `<@${i.user.id}>, pech cię znajdzie!`,
+                `<@${i.user.id}>, los jest brutalny!`
+            ];
+            return i.reply(randomFrom(teksty));
+        }
+
+        if (name === 'lisc') {
+            return i.reply(`<@${i.user.id}> wysłał liścia do ${targetUser}!`);
+        }
+
+        if (name === 'love') {
+            const teksty = [
+                `${targetUser || i.user} jesteś piękny jak stacktrace!`,
+                `${targetUser || i.user} świecisz jak monitor!`,
+                `${targetUser || i.user} jesteś moim słoneczkiem!`
+            ];
+            return i.reply(randomFrom(teksty));
+        }
+
+        if (name === 'rozkurw') {
+            return i.reply('Rozkurw wszędzie!');
+        }
+
+        if (name === 'impreza') {
+            return i.reply('Impreza w toku!');
+        }
+
+        if (name === 'torcik') {
+            return i.reply(`🎂 <@${i.user.id}> daje torcik do ${targetUser}!`);
+        }
+
+        if (name === 'reset') {
+            console.log(`🔄 Reset bota przez ${i.user.username}`);
+            await i.reply('Reset pomyślny');
+            process.exit(0);
         }
     }
 
