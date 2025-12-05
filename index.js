@@ -151,9 +151,6 @@ const commands = [
         .addUserOption(o => o.setName('przeciwnik').setDescription('Gracz do zagrania').setRequired(true))
         .setDMPermission(true),
 
-    // RESET
-    new SlashCommandBuilder().setName('reset').setDescription('Resetuje bota').setDMPermission(true),
-
     // GRY I ZABAWY
     new SlashCommandBuilder().setName('rzutmoneta').setDescription('Rzut monetą - orzeł lub reszka').setDMPermission(true),
 
@@ -339,12 +336,6 @@ client.on('interactionCreate', async i => {
 
         if (name === 'torcik') {
             return i.reply(`🎂 <@${i.user.id}> dorzuca torcik ${targetUser}, zajadaj, kurwa!`);
-        }
-
-        if (name === 'reset') {
-            console.log(`🔄 Reset bota przez ${i.user.username}`);
-            await i.reply('Reset jebany wykonany, wracaj do roboty!');
-            process.exit(0);
         }
 
         // GRY I ZABAWY
