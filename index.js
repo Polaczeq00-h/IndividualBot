@@ -28,11 +28,11 @@ const client = new Client({
 // ------------------- GITHUB COMMIT CHECK -------------------
 
 client.once('clientReady', async (c) => {
-    console.log(`Zalogowany jako ${c.user.tag}!`);
+    console.log(`✅ Zalogowany jako ${c.user.tag}!`);
 
     const channel = client.channels.cache.get('1445878372478484540');
     if (!channel) {
-        console.log('Nie znalazłem kanału, kurwa.');
+        console.log('⚠️ Kanał do powiadomień o commitach nie znaleziony.');
         return;
     }
 
@@ -69,12 +69,12 @@ client.once('clientReady', async (c) => {
             );
 
             fs.writeFileSync('./lastCommit.json', JSON.stringify({ id: commit.sha }));
-            console.log(`Wysłano commit kurwa: ${commitTitle}`);
+            console.log(`📤 Wysłano powiadomienie o commicie: ${commitTitle}`);
         } else {
-            console.log('Brak nowych commitów kurwa.');
+            console.log('📭 Brak nowych commitów.');
         }
     } catch (err) {
-        console.error('❌ Błąd pobierania commita zjebie:', err.message);
+        console.error('❌ Błąd pobierania commita:', err.message);
     }
 });
 
@@ -185,9 +185,9 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands }
         );
-        console.log('Komendy zarejestrowane!');
+        console.log('✅ Komendy zarejestrowane pomyślnie!');
     } catch (err) {
-        console.error('Błąd rejestracji komend:', err);
+        console.error('❌ Błąd rejestracji komend:', err.message);
     }
 })();
 
@@ -513,7 +513,7 @@ client.on('interactionCreate', async i => {
                 'Nie wiem 🤔',
                 'Chwileczka... 🎱',
                 'Zapytaj ponownie po piwie 🍺',
-                'Los mówi: spierdół' 
+                'Los mówi: spierdalaj! 🚀' 
             ];
             const wynik = odpowiedzi[Math.floor(Math.random() * odpowiedzi.length)];
             return i.reply(`🎱 Kulka 8 pierdoli:\n**${wynik}**`);
@@ -787,6 +787,12 @@ client.on('interactionCreate', async i => {
 
 });
 
+// ------------------- ERROR HANDLING -------------------
+
+client.on('error', err => console.error('❌ Client error:', err));
+process.on('unhandledRejection', err => console.error('❌ Unhandled rejection:', err));
+
 // ------------------- LOGOWANIE -------------------
 
+console.log('🚀 Bot startuje...');
 client.login(process.env.DISCORD_TOKEN);
