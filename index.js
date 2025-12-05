@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs';
 import axios from 'axios';
+import QRCode from 'qrcode';
 import { 
     Client, 
     GatewayIntentBits, 
@@ -63,7 +64,7 @@ client.once('clientReady', async (c) => {
 
             if (lastCommitId !== commit.sha) {
             await channel.send(
-                `Nowy commit, kurwa! @everyone\n` +
+                `Nowy commit, kurwa!\n` +
                 `**${commitTitle}**\n${commitLink}\n` +
                 `Autor: ${commitAuthor} — ${new Date(commitDate).toLocaleString()}`
             );
@@ -172,6 +173,23 @@ const commands = [
         .setName('szansa')
         .setDescription('Ile szans że coś się uda')
         .addIntegerOption(o => o.setName('procent').setDescription('Procent (0-100)').setRequired(false))
+        .setDMPermission(true),
+
+    // KODOWANIE
+    new SlashCommandBuilder()
+        .setName('qr')
+        .setDescription('Generuje kod QR z tekstu')
+        .addStringOption(o => o.setName('tekst').setDescription('Tekst do zakodowania').setRequired(true))
+        .setDMPermission(true),
+
+    new SlashCommandBuilder()
+        .setName('base64')
+        .setDescription('Koduje/dekoduje Base64')
+        .addStringOption(o => o.setName('tekst').setDescription('Tekst do kodowania/dekodowania').setRequired(true))
+        .addStringOption(o => o.setName('tryb').setDescription('Tryb: encode (domyślnie) lub decode').setRequired(false).addChoices(
+            { name: 'encode', value: 'encode' },
+            { name: 'decode', value: 'decode' }
+        ))
         .setDMPermission(true),
 ].map(c => c.toJSON());
 
@@ -354,21 +372,21 @@ client.on('interactionCreate', async i => {
         }
 
         if (name === 'papierokamiennozaniec') {
-            const opcje = ['Papier 📄', 'Kamień 🪨', 'Nożyce ✂️'];
-            const botChoice = opcje[Math.floor(Math.random() * opcje.length)];
-            
-            const row = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder().setCustomId(`pkn_papier_${i.user.id}`).setLabel('Papier 📄').setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setCustomId(`pkn_kamien_${i.user.id}`).setLabel('Kamień 🪨').setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setCustomId(`pkn_nozyce_${i.user.id}`).setLabel('Nożyce ✂️').setStyle(ButtonStyle.Primary)
-                );
+    const opcje = ['Papier 📄', 'Kamień 🪨', 'Nożyce ✂️'];
 
-            return i.reply({
-                content: `<@${i.user.id}> vs Bot\nBot wybrał: **${botChoice}** — pokaż co masz, kurwa:\n`,
-                components: [row]
-            });
-        }
+    const row = new ActionRowBuilder()
+        .addComponents(
+            new ButtonBuilder().setCustomId(`pkn_papier_${i.user.id}`).setLabel('Papier 📄').setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId(`pkn_kamien_${i.user.id}`).setLabel('Kamień 🪨').setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId(`pkn_nozyce_${i.user.id}`).setLabel('Nożyce ✂️').setStyle(ButtonStyle.Primary)
+        );
+
+    return i.reply({
+        content: 'Wybieraj, kurwa:',
+        components: [row]
+    });
+}
+
 
         if (name === 'wisielec') {
             const slowa = ['JAVASCRIPT', 'DISCORD', 'NODEJS', 'GITHUB', 'TELEGRAM', 'PYTHON'];
@@ -528,6 +546,52 @@ client.on('interactionCreate', async i => {
             const szansa = Math.random() * 100;
             const wynik = szansa <= procent ? '✅ SIĘ UDA!' : '❌ SIĘ NIE UDA!';
             return i.reply(`<@${i.user.id}> szansa: **${procent}%**\nLos: ${Math.floor(szansa)}%\n${wynik}`);
+        }
+
+        // KODOWANIE QR
+        if (name === 'qr') {
+            const tekst = i.options.getString('tekst');
+            if (tekst.length > 500) {
+                return i.reply('Tekst jest za długi! Maksymalnie 500 znaków.');
+            }
+
+            try {
+                const qrPath = `qr_${Date.now()}.png`;
+                await QRCode.toFile(qrPath, tekst, {
+                    errorCorrectionLevel: 'H',
+                    type: 'image/png',
+                    width: 300,
+                    margin: 1,
+                    color: { dark: '#000000', light: '#FFFFFF' }
+                });
+
+                await i.reply({
+                    content: `📱 Kod QR dla: \`${tekst}\``,
+                    files: [qrPath]
+                });
+
+                fs.unlinkSync(qrPath);
+            } catch (err) {
+                return i.reply(`❌ Błąd generowania QR: ${err.message}`);
+            }
+        }
+
+        // KODOWANIE BASE64
+        if (name === 'base64') {
+            const tekst = i.options.getString('tekst');
+            const tryb = i.options.getString('tryb') || 'encode';
+
+            try {
+                if (tryb === 'encode') {
+                    const encoded = Buffer.from(tekst).toString('base64');
+                    return i.reply(`🔐 Base64 (encode):\n\`\`\`\n${encoded}\n\`\`\``);
+                } else {
+                    const decoded = Buffer.from(tekst, 'base64').toString('utf-8');
+                    return i.reply(`🔓 Base64 (decode):\n\`\`\`\n${decoded}\n\`\`\``);
+                }
+            } catch (err) {
+                return i.reply(`❌ Błąd kodowania Base64: ${err.message}`);
+            }
         }
     }
 
@@ -789,8 +853,35 @@ client.on('interactionCreate', async i => {
 
 // ------------------- ERROR HANDLING -------------------
 
+// Zmienna do śledzenia ostatniego kanału
+let lastChannel = null;
+
+client.on('messageCreate', msg => {
+    if (!msg.author.bot) {
+        lastChannel = msg.channel;
+    }
+});
+
 client.on('error', err => console.error('❌ Client error:', err));
-process.on('unhandledRejection', err => console.error('❌ Unhandled rejection:', err));
+
+process.on('unhandledRejection', async err => {
+    console.error('❌ Unhandled rejection:', err);
+    if (lastChannel) {
+        try {
+            await lastChannel.send('💥 Wyjebalem sie, zaraz wstane');
+        } catch (e) {}
+    }
+});
+
+process.on('uncaughtException', async err => {
+    console.error('❌ Uncaught exception:', err);
+    if (lastChannel) {
+        try {
+            await lastChannel.send('💥 Wyjebalem sie, zaraz wstane');
+        } catch (e) {}
+    }
+    process.exit(1);
+});
 
 // ------------------- LOGOWANIE -------------------
 
