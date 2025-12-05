@@ -435,19 +435,13 @@ client.on('interactionCreate', async i => {
 =========`
             ];
 
-            const TIMEOUT_MS = 10 * 60 * 1000; // timeout: 10 minut od ostatniej aktywności
-
             tictacGames.set(gameId, {
                 word: slowo,
                 guessed: [],
                 wrong: 0,
                 type: 'hangman',
                 owner: i.user.id,
-                page: 0,
-                timeoutId: null,
-                channelId: null,
-                messageId: null,
-                lastActivity: Date.now()
+                page: 0
             });
 
             const display = slowo.split('').map(c => tictacGames.get(gameId).guessed.includes(c) ? c : '_').join(' ');
@@ -481,11 +475,6 @@ client.on('interactionCreate', async i => {
                 components: rows,
                 fetchReply: true
             });
-
-            // zapisz message info
-            const g = tictacGames.get(gameId);
-            g.channelId = sent.channelId;
-            g.messageId = sent.id;
 
             return;
         }
@@ -734,22 +723,6 @@ client.on('interactionCreate', async i => {
             if (!game) return i.reply({ content: 'Gra wygasła, spierdalaj!', ephemeral: true });
             if (i.user.id !== ownerId) return i.reply({ content: 'To nie Twoja gra, spierdalaj!', ephemeral: true });
 
-            // Ustaw timeout na pierwszym ruchu (jeśli jeszcze nie ustawiony)
-            if (!game.timeoutId) {
-                const TIMEOUT_MS = 10 * 60 * 1000; // 10 minut od pierwszego ruchu
-                game.timeoutId = setTimeout(async () => {
-                    const g = tictacGames.get(gameId);
-                    if (!g) return;
-                    tictacGames.delete(gameId);
-                    try {
-                        const ch = await client.channels.fetch(g.channelId);
-                        const msg = await ch.messages.fetch(g.messageId);
-                        await msg.edit({ content: `⌛ Gra jebana wygasła! Słowo: **${g.word}**`, components: [] });
-                    } catch (e) {}
-                }, TIMEOUT_MS);
-            }
-            game.lastActivity = Date.now();
-
             const L = letter.toUpperCase();
             if (game.guessed.includes(L)) return i.reply({ content: 'Już zgadłeś tę literę, kurwa!', ephemeral: true });
 
@@ -764,15 +737,12 @@ client.on('interactionCreate', async i => {
             // Sprawdzenie wygranej
             const allGuessed = game.word.split('').every(c => game.guessed.includes(c));
             if (allGuessed) {
-                // clear timeout if set
-                if (game.timeoutId) clearTimeout(game.timeoutId);
                 tictacGames.delete(gameId);
                 return i.update({ content: `🎉 Wygrałeś, szczęściarzu! Słowo: **${game.word}**`, components: [] });
             }
 
             // Sprawdzenie przegranej
             if (game.wrong >= 6) {
-                if (game.timeoutId) clearTimeout(game.timeoutId);
                 tictacGames.delete(gameId);
                 // include final hangman art if available
                 const HANGMAN_PICS = [
