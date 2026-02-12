@@ -88,15 +88,15 @@ const commands = [
     //wersja
     new SlashCommandBuilder().setName('wersja').setDescription('Pokazuje wersję bota').setDMPermission(true),
         //fivemowe komendy
-    new SlashCommandBuilder().setName('e kciuk').setDescription('Wysyla zdjecie kciuka').setDMPermission(true),
+    new SlashCommandBuilder().setName('e_kciuk').setDescription('Wysyla zdjecie kciuka').setDMPermission(true),
 
-    new SlashCommandBuilder().setName('e stopa').setDescription('Wysyla zdjecie stopy').setDMPermission(true),
+    new SlashCommandBuilder().setName('e_stopa').setDescription('Wysyla zdjecie stopy').setDMPermission(true),
 
-    new SlashCommandBuilder().setName('e lezenie').setDescription('Wysyla zdjecie lezenia').setDMPermission(true),
+    new SlashCommandBuilder().setName('e_lezenie').setDescription('Wysyla zdjecie lezenia').setDMPermission(true),
 
-    new SlashCommandBuilder().setName('e siedzenie').setDescription('Wysyla zdjecie siedzenia').setDMPermission(true),
+    new SlashCommandBuilder().setName('e_siedzenie').setDescription('Wysyla zdjecie siedzenia').setDMPermission(true),
 
-    new SlashCommandBuilder().setName('e sory').setDescription('wysyla gifa z przeprosinami').setDMPermission(true),
+    new SlashCommandBuilder().setName('e_sory').setDescription('wysyla gifa z przeprosinami').setDMPermission(true),
 
     // JIGGLE PHYSICS
     new SlashCommandBuilder().setName('jiggle-physics').setDescription('Jiggle hysics dla obrazka').addAttachmentOption(o => o.setName('obrazek').setDescription('Obrazek do przetworzenia').setRequired(true)).setDMPermission(true),
@@ -242,14 +242,14 @@ client.on('interactionCreate', async i => {
         //obsluga komend
 
         // E KCIUK
-    if (name === 'e kciuk') {
+    if (name === 'e_kciuk') {
         const imageFolder = 'Zdjecia/kciuk'; 
         const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
         const randomImage = images[Math.floor(Math.random() * images.length)];
         return i.reply({ files: [path.join(imageFolder, randomImage)] });
 }
         // E STOPA
-if (name === 'e stopa') {
+if (name === 'e_stopa') {
     const imageFolder = 'Zdjecia/stopa'; 
     const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
     const randomImage = images[Math.floor(Math.random() * images.length)];
@@ -257,7 +257,7 @@ if (name === 'e stopa') {
 }
 
         // E LEZENIE
-if (name === 'e lezenie') {
+if (name === 'e_lezenie') {
     const imageFolder = 'Zdjecia/lezenie'; 
     const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
     const randomImage = images[Math.floor(Math.random() * images.length)];
@@ -265,7 +265,7 @@ if (name === 'e lezenie') {
 }
 
         // E SIEDZENIE
-if (name === 'e siedzenie') {
+if (name === 'e_siedzenie') {
     const imageFolder = 'Zdjecia/siedzenie'; 
     const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
     const randomImage = images[Math.floor(Math.random() * images.length)];
@@ -273,7 +273,7 @@ if (name === 'e siedzenie') {
 }
 
         // E SORY
-if (name === 'e sory') {
+if (name === 'e_sory') {
     const imageFolder = 'Zdjecia/sory';
     const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
     const randomImage = images[Math.floor(Math.random() * images.length)];
