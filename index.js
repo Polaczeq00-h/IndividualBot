@@ -38,8 +38,6 @@ client.once('ready', async () => {
         console.log('⚠️ Kanał do powiadomień o commitach nie znaleziony.');
         return;
     }
-    
-    
 
     try {
         const owner = process.env.GITHUB_OWNER || 'Polaczeq00-h';
@@ -87,30 +85,36 @@ client.once('ready', async () => {
 // ------------------- LISTA KOMEND -------------------
 
 const commands = [
+    //wersja
+    new SlashCommandBuilder().setName('wersja').setDescription('Pokazuje wersję bota').setDMPermission(true),
+        //fivemowe komendy
+    new SlashCommandBuilder().setName('e kciuk').setDescription('Wysyla zdjecie kciuka').setDMPermission(true),
 
-    new SlashCommandBuilder()
-    .setName('wersja')
-    .setDescription('Pokazuje wersję bota')
-    .setDMPermission(true),
+    new SlashCommandBuilder().setName('e stopa').setDescription('Wysyla zdjecie stopy').setDMPermission(true),
 
+    new SlashCommandBuilder().setName('e lezenie').setDescription('Wysyla zdjecie lezenia').setDMPermission(true),
 
-    new SlashCommandBuilder().setName('jiggle-physics')
-        .setDescription('Jiggle hysics dla obrazka')
-        .addAttachmentOption(o => o.setName('obrazek').setDescription('Obrazek do przetworzenia').setRequired(true)),
+    new SlashCommandBuilder().setName('e siedzenie').setDescription('Wysyla zdjecie siedzenia').setDMPermission(true),
+
+    new SlashCommandBuilder().setName('e sory').setDescription('wysyla gifa z przeprosinami').setDMPermission(true),
+
+    // JIGGLE PHYSICS
+    new SlashCommandBuilder().setName('jiggle-physics').setDescription('Jiggle hysics dla obrazka').addAttachmentOption(o => o.setName('obrazek').setDescription('Obrazek do przetworzenia').setRequired(true)).setDMPermission(true),
+    //co
     new SlashCommandBuilder().setName('co').setDescription('ping').setDMPermission(true),
-
+    //morda
     new SlashCommandBuilder()
         .setName('morda')
         .setDescription('Wyzywa wskazaną osobę')
         .addUserOption(o => o.setName('kto').setDescription('Kogo zwyzywać').setRequired(true))
         .setDMPermission(true),
-
+    //zabierz
     new SlashCommandBuilder()
         .setName('zabierz')
         .setDescription('Zabiera coś komuś')
         .addUserOption(o => o.setName('kto').setDescription('Komu zabrać').setRequired(true))
         .setDMPermission(true),
-
+    // zajeb
     new SlashCommandBuilder()
         .setName('zajeb')
         .setDescription('Daje mocne jebnięcie komuś')
@@ -142,6 +146,7 @@ const commands = [
         .setDMPermission(true),
 
     new SlashCommandBuilder().setName('rozkurw').setDescription('Rozkurwia sytuację').setDMPermission(true),
+
     new SlashCommandBuilder().setName('impreza').setDescription('Rozpoczyna imprezę kurwa').setDMPermission(true),
 
     new SlashCommandBuilder()
@@ -236,10 +241,49 @@ client.on('interactionCreate', async i => {
         const latency = Date.now() - i.createdTimestamp;
         //obsluga komend
 
+        // E KCIUK
+    if (name === 'e kciuk') {
+        const imageFolder = 'Zdjecia/kciuk'; 
+        const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
+        const randomImage = images[Math.floor(Math.random() * images.length)];
+        return i.reply({ files: [path.join(imageFolder, randomImage)] });
+}
+        // E STOPA
+if (name === 'e stopa') {
+    const imageFolder = 'Zdjecia/stopa'; 
+    const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
+    const randomImage = images[Math.floor(Math.random() * images.length)];
+    return i.reply({ files: [path.join(imageFolder, randomImage)] });
+}
+
+        // E LEZENIE
+if (name === 'e lezenie') {
+    const imageFolder = 'Zdjecia/lezenie'; 
+    const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
+    const randomImage = images[Math.floor(Math.random() * images.length)];
+    return i.reply({ files: [path.join(imageFolder, randomImage)] });
+}
+
+        // E SIEDZENIE
+if (name === 'e siedzenie') {
+    const imageFolder = 'Zdjecia/siedzenie'; 
+    const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
+    const randomImage = images[Math.floor(Math.random() * images.length)];
+    return i.reply({ files: [path.join(imageFolder, randomImage)] });
+}
+
+        // E SORY
+if (name === 'e sory') {
+    const imageFolder = 'Zdjecia/sory';
+    const images = fs.readdirSync(imageFolder).filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
+    const randomImage = images[Math.floor(Math.random() * images.length)];
+    return i.reply({ files: [path.join(imageFolder, randomImage)] });
+}
+
+        // WERSJA
     if (name === 'wersja') {
         return i.reply(`🤖 Wersja bota: **${BOT_VERSION}**`);
     }
-
 
         if (name === 'jiggle-physics') {
         return i.reply('Jiggle physics jest niedostępne, kurwa! daj devowi czas na ogarnięcie tej jebanej funkcji!');
